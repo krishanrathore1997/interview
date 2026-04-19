@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React 19 & Modern JavaScript — Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #07090e;
+  --s1:    #0d1119;
+  --s2:    #121820;
+  --s3:    #171f2a;
+  --s4:    #1d2735;
+  --bdr:   rgba(99,179,237,0.07);
+  --bdr2:  rgba(99,179,237,0.14);
+  --text:  #c8d8e8;
+  --muted: #3d5166;
+  --muted2:#6a8399;
+  --react: #61dafb;
+  --js:    #f7df1e;
+  --blue:  #4fa3e8;
+  --cyan:  #00e5ff;
+  --green: #00f5a0;
+  --lime:  #aaff00;
+  --yel:   #ffd93d;
+  --ora:   #ff9f43;
+  --red:   #ff5c7c;
+  --purp:  #bd8cf7;
+  --pink:  #ff79c6;
+  --teal:  #26ffe0;
+  --mono:  'Inconsolata', monospace;
+  --sans:  'Plus Jakarta Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* ── NAV ── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,9,14,0.93);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bdr2);
+  display:flex;align-items:stretch;
+  padding:0 24px;
+  overflow-x:auto;scrollbar-width:none;
+  height:50px;
+}
+.nav::-webkit-scrollbar{display:none}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding-right:18px;border-right:1px solid var(--bdr2);
+  margin-right:6px;flex-shrink:0;
+}
+.b-react{
+  font-size:20px;line-height:1;
+  animation: spin 12s linear infinite;
+  display:inline-block;color:var(--react);
+}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.b-js{
+  width:22px;height:22px;border-radius:4px;
+  background:var(--js);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;color:#000;
+}
+.brand-name{font-weight:800;font-size:13px;color:#fff;letter-spacing:-.01em;}
+.nl{
+  font-size:11.5px;font-weight:500;color:var(--muted2);
+  text-decoration:none;padding:0 12px;
+  display:flex;align-items:center;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.nl:hover{color:var(--text);}
+.nl.on{color:var(--react);border-bottom-color:var(--react);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1420px;margin:0 auto;padding:38px 22px 120px;}
+
+/* ── SECTION ── */
+.sec{scroll-margin-top:54px;}
+.sh{
+  display:flex;align-items:flex-start;gap:14px;
+  margin:50px 0 18px;
+  padding-bottom:13px;
+  border-bottom:1px solid var(--bdr2);
+}
+.sh:first-child{margin-top:0;}
+.sh-ico{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex-shrink:0;margin-top:2px;
+}
+.sh-title{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.025em;}
+.sh-sub{font-size:12px;color:var(--muted2);margin-top:3px;}
+
+/* ── TAGS ── */
+.tg{
+  display:inline-flex;align-items:center;
+  font-size:9.5px;font-weight:700;letter-spacing:.07em;
+  padding:2px 7px;border-radius:3px;
+  text-transform:uppercase;margin-left:7px;vertical-align:middle;
+}
+.tg-new{background:rgba(0,245,160,.1);color:var(--green);border:1px solid rgba(0,245,160,.2);}
+.tg-adv{background:rgba(189,140,247,.1);color:var(--purp);border:1px solid rgba(189,140,247,.2);}
+.tg-perf{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2);}
+.tg-es{background:rgba(247,223,30,.1);color:var(--yel);border:1px solid rgba(247,223,30,.2);}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:13px;}
+.g3{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));}
+.g2f{grid-template-columns:1fr 1fr;}
+.span2{grid-column:span 2;}
+
+/* ── CARD ── */
+.card{
+  background:var(--s1);
+  border:1px solid var(--bdr);
+  border-radius:10px;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.card:hover{border-color:var(--bdr2);}
+.ch{
+  display:flex;align-items:center;gap:9px;
+  padding:11px 15px;
+  background:var(--s2);
+  border-bottom:1px solid var(--bdr);
+}
+.ci{
+  width:24px;height:24px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;flex-shrink:0;
+}
+.ct{font-size:12px;font-weight:600;flex:1;}
+.cb{padding:13px 15px;}
+
+/* accent palettes */
+.a-react .ci{background:rgba(97,218,251,.1);color:var(--react);}
+.a-react .ct{color:var(--react);}
+.a-react{border-color:rgba(97,218,251,.12);}
+
+.a-js .ci{background:rgba(247,223,30,.1);color:var(--yel);}
+.a-js .ct{color:var(--yel);}
+.a-js{border-color:rgba(247,223,30,.12);}
+
+.a-blue .ci{background:rgba(79,163,232,.1);color:var(--blue);}
+.a-blue .ct{color:var(--blue);}
+.a-blue{border-color:rgba(79,163,232,.12);}
+
+.a-cyan .ci{background:rgba(0,229,255,.08);color:var(--cyan);}
+.a-cyan .ct{color:var(--cyan);}
+.a-cyan{border-color:rgba(0,229,255,.1);}
+
+.a-green .ci{background:rgba(0,245,160,.08);color:var(--green);}
+.a-green .ct{color:var(--green);}
+.a-green{border-color:rgba(0,245,160,.1);}
+
+.a-lime .ci{background:rgba(170,255,0,.08);color:var(--lime);}
+.a-lime .ct{color:var(--lime);}
+.a-lime{border-color:rgba(170,255,0,.1);}
+
+.a-yel .ci{background:rgba(255,217,61,.1);color:var(--yel);}
+.a-yel .ct{color:var(--yel);}
+.a-yel{border-color:rgba(255,217,61,.12);}
+
+.a-ora .ci{background:rgba(255,159,67,.1);color:var(--ora);}
+.a-ora .ct{color:var(--ora);}
+.a-ora{border-color:rgba(255,159,67,.12);}
+
+.a-red .ci{background:rgba(255,92,124,.1);color:var(--red);}
+.a-red .ct{color:var(--red);}
+.a-red{border-color:rgba(255,92,124,.12);}
+
+.a-purp .ci{background:rgba(189,140,247,.1);color:var(--purp);}
+.a-purp .ct{color:var(--purp);}
+.a-purp{border-color:rgba(189,140,247,.12);}
+
+.a-pink .ci{background:rgba(255,121,198,.1);color:var(--pink);}
+.a-pink .ct{color:var(--pink);}
+.a-pink{border-color:rgba(255,121,198,.12);}
+
+.a-teal .ci{background:rgba(38,255,224,.08);color:var(--teal);}
+.a-teal .ct{color:var(--teal);}
+.a-teal{border-color:rgba(38,255,224,.1);}
+
+/* ── CODE ── */
+pre,code{font-family:var(--mono);font-size:12px;}
+pre{
+  background:var(--bg);
+  border:1px solid var(--bdr);
+  border-radius:6px;
+  padding:11px 13px;
+  overflow-x:auto;
+  line-height:1.8;
+  margin-bottom:10px;
+}
+pre:last-child{margin-bottom:0;}
+code{
+  background:var(--s3);border:1px solid var(--bdr);
+  border-radius:3px;padding:1px 5px;
+  color:var(--ora);font-size:11px;
+}
+
+/* syntax */
+.k {color:#ff6b9d;}  /* keyword */
+.f {color:#bd8cf7;}  /* fn/method */
+.s {color:#72d5f5;}  /* string */
+.c {color:#2e4255;}  /* comment */
+.v {color:#ff9f43;}  /* var */
+.n {color:#00f5a0;}  /* number/bool/null */
+.cl{color:#ffd93d;}  /* class/component */
+.d {color:#61dafb;}  /* hook/directive */
+.t {color:#26ffe0;}  /* type/interface */
+.op{color:#6a8399;}  /* operator */
+
+/* ── ALERTS ── */
+.al{
+  display:flex;gap:9px;
+  padding:9px 12px;border-radius:6px;
+  margin-bottom:9px;font-size:12px;line-height:1.5;
+}
+.al:last-child{margin-bottom:0;}
+.al-warn{background:rgba(255,217,61,.07);border:1px solid rgba(255,217,61,.2);color:#c9a230;}
+.al-good{background:rgba(0,245,160,.06);border:1px solid rgba(0,245,160,.15);color:#00c47e;}
+.al-info{background:rgba(79,163,232,.07);border:1px solid rgba(79,163,232,.2);color:#5a9fd4;}
+.al-bad {background:rgba(255,92,124,.06);border:1px solid rgba(255,92,124,.18);color:#cc3f60;}
+.al-new {background:rgba(189,140,247,.07);border:1px solid rgba(189,140,247,.2);color:#9b6fe0;}
+.al-i{flex-shrink:0;font-size:14px;}
+
+/* ── LABEL ── */
+.lb{
+  font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+  margin:0 0 7px;
+}
+.lb:not(:first-child){margin-top:13px;}
+
+/* ── TABLE ── */
+.tb{width:100%;border-collapse:collapse;}
+.tb td{padding:5px 0;font-size:12px;vertical-align:top;}
+.tb td:first-child{font-family:var(--mono);font-size:11px;color:var(--teal);padding-right:12px;white-space:nowrap;}
+.tb td:last-child{color:var(--muted2);}
+.tb tr+tr td{border-top:1px solid var(--bdr);}
+
+/* ── TWO COL ── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── COMPARE ── */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bdr);}
+.compare>div{background:var(--s1);padding:10px 13px;}
+.compare .lb{margin-bottom:5px;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="brand">
+    <span class="b-react">⚛</span>
+    <div class="b-js">JS</div>
+    <span class="brand-name">React 19 &amp; Modern JS</span>
+  </div>
+  <a href="#js-core" class="nl">JS Core</a>
+  <a href="#async" class="nl">Async</a>
+  <a href="#patterns-js" class="nl">JS Patterns</a>
+  <a href="#react-core" class="nl">React Core</a>
+  <a href="#hooks" class="nl">Hooks</a>
+  <a href="#react19" class="nl">React 19</a>
+  <a href="#state" class="nl">State Mgmt</a>
+  <a href="#perf" class="nl">Performance</a>
+  <a href="#patterns" class="nl">Patterns</a>
+  <a href="#testing" class="nl">Testing</a>
+  <a href="#tooling" class="nl">Tooling</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ════════════════════════════════════════════
+     MODERN JAVASCRIPT CORE
+════════════════════════════════════════════ -->
+<div id="js-core" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(247,223,30,.1);color:var(--yel);">JS</div>
+  <div>
+    <div class="sh-title">Modern JavaScript — ES2020–2024<span class="tg tg-es">ES2024</span></div>
+    <div class="sh-sub">Destructuring, optional chaining, nullish, iterators, logical assignment, Records &amp; Tuples</div>
+  </div>
+</div>
+<div class="grid g3">
+
+<div class="card a-js">
+  <div class="ch"><div class="ci">💎</div><span class="ct">Destructuring &amp; Spreading</span></div>
+  <div class="cb">
+    <pre><span class="c">// Array destructuring + rest</span>
+<span class="k">const</span> [<span class="v">first</span>, <span class="v">second</span>, ...<span class="v">rest</span>] = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>]
+<span class="k">const</span> [, <span class="v">skip</span>, <span class="v">third</span>] = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]     <span class="c">// skip index 0</span>
+
+<span class="c">// Object destructuring + rename + default</span>
+<span class="k">const</span> { <span class="v">name</span>: <span class="v">userName</span> = <span class="s">'Guest'</span>, <span class="v">age</span>, ...<span class="v">rest</span> } = <span class="v">user</span>
+<span class="k">const</span> { <span class="v">a</span>: { <span class="v">b</span>: { <span class="v">c</span> } } } = <span class="v">nested</span>     <span class="c">// deep destructure</span>
+
+<span class="c">// Destructure in function params</span>
+<span class="k">function</span> <span class="f">greet</span>({ <span class="v">name</span>, <span class="v">age</span> = <span class="n">18</span> } = {}) {
+  <span class="k">return</span> <span class="s">`Hello ${<span class="v">name</span>}, age ${<span class="v">age</span>}`</span>
+}
+
+<span class="c">// Spread — shallow clone + merge</span>
+<span class="k">const</span> <span class="v">merged</span> = { ...<span class="v">defaults</span>, ...<span class="v">overrides</span> }
+<span class="k">const</span> <span class="v">copy</span>   = [...<span class="v">arr</span>, <span class="v">newItem</span>]
+<span class="k">const</span> <span class="v">updated</span> = { ...<span class="v">obj</span>, name: <span class="s">'new'</span> }
+
+<span class="c">// Computed property names</span>
+<span class="k">const</span> <span class="v">key</span> = <span class="s">'dynamic'</span>
+<span class="k">const</span> <span class="v">obj</span> = { [<span class="v">key</span>]: <span class="n">true</span>, [<span class="s">`${<span class="v">key</span>}_extra`</span>]: <span class="n">42</span> }
+
+<span class="c">// Swap variables</span>
+[<span class="v">a</span>, <span class="v">b</span>] = [<span class="v">b</span>, <span class="v">a</span>]</pre>
+  </div>
+</div>
+
+<div class="card a-js">
+  <div class="ch"><div class="ci">🔗</div><span class="ct">Optional Chaining, Nullish &amp; Logical Assignment</span></div>
+  <div class="cb">
+    <pre><span class="c">// Optional chaining — returns undefined instead of throwing</span>
+<span class="v">user</span>?.profile?.avatar?.url
+<span class="v">arr</span>?.[<span class="n">0</span>]               <span class="c">// array element</span>
+<span class="v">obj</span>?.<span class="f">method</span>?.()         <span class="c">// method call</span>
+
+<span class="c">// Nullish coalescing — only ?? for null/undefined (not falsy)</span>
+<span class="k">const</span> <span class="v">name</span> = <span class="v">user</span>.name <span class="op">??</span> <span class="s">'Anonymous'</span>   <span class="c">// '' is kept</span>
+<span class="k">const</span> <span class="v">age</span>  = <span class="v">user</span>.age  <span class="op">||</span> <span class="n">18</span>            <span class="c">// 0 becomes 18 — careful!</span>
+
+<span class="c">// Logical assignment (ES2021)</span>
+<span class="v">a</span> <span class="op">||=</span> <span class="s">'default'</span>   <span class="c">// a = a || 'default'</span>
+<span class="v">a</span> <span class="op">&&=</span> <span class="f">transform</span>(<span class="v">a</span>) <span class="c">// a = a && transform(a)</span>
+<span class="v">a</span> <span class="op">??=</span> <span class="f">init</span>()       <span class="c">// a = a ?? init() — only if null/undefined</span>
+
+<span class="c">// Numeric separators (readability)</span>
+<span class="k">const</span> <span class="v">billion</span>  = <span class="n">1_000_000_000</span>
+<span class="k">const</span> <span class="v">bytes</span>    = <span class="n">0xFF_FF_FF</span>
+
+<span class="c">// Object.hasOwn() — replaces hasOwnProperty</span>
+<span class="cl">Object</span>.<span class="f">hasOwn</span>(<span class="v">obj</span>, <span class="s">'key'</span>)
+
+<span class="c">// structuredClone — deep clone (ES2022)</span>
+<span class="k">const</span> <span class="v">deep</span> = <span class="f">structuredClone</span>(<span class="v">original</span>)
+
+<span class="c">// at() — negative index (ES2022)</span>
+<span class="v">arr</span>.<span class="f">at</span>(-<span class="n">1</span>)    <span class="c">// last element</span>
+<span class="s">'hello'</span>.<span class="f">at</span>(-<span class="n">1</span>) <span class="c">// 'o'</span></pre>
+  </div>
+</div>
+
+<div class="card a-js">
+  <div class="ch"><div class="ci">🧰</div><span class="ct">Array, Object &amp; String Methods</span></div>
+  <div class="cb">
+    <pre><span class="c">// Array (ES2023)</span>
+<span class="v">arr</span>.<span class="f">toSorted</span>()            <span class="c">// returns new sorted array</span>
+<span class="v">arr</span>.<span class="f">toReversed</span>()          <span class="c">// returns new reversed array</span>
+<span class="v">arr</span>.<span class="f">toSpliced</span>(<span class="n">1</span>, <span class="n">1</span>, <span class="s">'x'</span>) <span class="c">// returns new spliced array</span>
+<span class="v">arr</span>.<span class="f">with</span>(<span class="n">2</span>, <span class="s">'val'</span>)        <span class="c">// returns new array with index 2 changed</span>
+<span class="v">arr</span>.<span class="f">findLast</span>(<span class="v">x</span> => <span class="v">x</span> > <span class="n">3</span>)  <span class="c">// findLast / findLastIndex</span>
+[<span class="n">1</span>,[<span class="n">2</span>,[<span class="n">3</span>]]].<span class="f">flat</span>(<span class="cl">Infinity</span>)  <span class="c">// deep flatten</span>
+<span class="v">arr</span>.<span class="f">flatMap</span>(<span class="v">x</span> => [<span class="v">x</span>, <span class="v">x</span>*<span class="n">2</span>]) <span class="c">// map + flatten 1 level</span>
+<span class="cl">Array</span>.<span class="f">from</span>({ length: <span class="n">5</span> }, (_, <span class="v">i</span>) => <span class="v">i</span>) <span class="c">// [0,1,2,3,4]</span>
+
+<span class="c">// Object (ES2019–2024)</span>
+<span class="cl">Object</span>.<span class="f">fromEntries</span>(<span class="v">map</span>)                  <span class="c">// Map → Object</span>
+<span class="cl">Object</span>.<span class="f">fromEntries</span>(<span class="cl">Object</span>.<span class="f">entries</span>(<span class="v">obj</span>).<span class="f">filter</span>(...))
+<span class="cl">Object</span>.<span class="f">groupBy</span>(<span class="v">arr</span>, <span class="v">item</span> => <span class="v">item</span>.category) <span class="c">// ES2024 groupBy</span>
+<span class="cl">Map</span>.<span class="f">groupBy</span>(<span class="v">arr</span>, <span class="v">item</span> => <span class="v">item</span>.type)       <span class="c">// ES2024 Map.groupBy</span>
+
+<span class="c">// String</span>
+<span class="s">'  hello  '</span>.<span class="f">trimStart</span>().<span class="f">trimEnd</span>()
+<span class="s">'abc'</span>.<span class="f">padStart</span>(<span class="n">5</span>, <span class="s">'0'</span>)  <span class="c">// '00abc'</span>
+<span class="s">'ha'</span>.<span class="f">repeat</span>(<span class="n">3</span>)           <span class="c">// 'hahaha'</span>
+<span class="s">'file.ts'</span>.<span class="f">replaceAll</span>(<span class="s">'.'</span>, <span class="s">'_'</span>)</pre>
+  </div>
+</div>
+
+<div class="card a-yel">
+  <div class="ch"><div class="ci">🗺</div><span class="ct">Map, Set, WeakMap, WeakRef</span></div>
+  <div class="cb">
+    <pre><span class="c">// Map — ordered, any key type, iterable</span>
+<span class="k">const</span> <span class="v">map</span> = <span class="k">new</span> <span class="cl">Map</span>([
+  [<span class="s">'key'</span>, <span class="n">1</span>],
+  [<span class="v">objKey</span>, <span class="n">2</span>],   <span class="c">// object as key!</span>
+])
+<span class="v">map</span>.<span class="f">set</span>(<span class="s">'x'</span>, <span class="n">42</span>)
+<span class="v">map</span>.<span class="f">get</span>(<span class="s">'x'</span>)
+<span class="v">map</span>.<span class="f">has</span>(<span class="s">'x'</span>)
+<span class="v">map</span>.<span class="f">delete</span>(<span class="s">'x'</span>)
+<span class="k">for</span> (<span class="k">const</span> [<span class="v">k</span>, <span class="v">v</span>] <span class="k">of</span> <span class="v">map</span>) { ... }
+
+<span class="c">// Set — unique values, insertion order</span>
+<span class="k">const</span> <span class="v">set</span> = <span class="k">new</span> <span class="cl">Set</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">2</span>, <span class="n">3</span>])   <span class="c">// {1,2,3}</span>
+<span class="k">const</span> <span class="v">unique</span> = [...<span class="k">new</span> <span class="cl">Set</span>(<span class="v">arr</span>)]  <span class="c">// deduplicate array</span>
+<span class="c">// New Set methods (ES2024): union, intersection, difference</span>
+<span class="v">setA</span>.<span class="f">union</span>(<span class="v">setB</span>)
+<span class="v">setA</span>.<span class="f">intersection</span>(<span class="v">setB</span>)
+<span class="v">setA</span>.<span class="f">difference</span>(<span class="v">setB</span>)
+<span class="v">setA</span>.<span class="f">isSubsetOf</span>(<span class="v">setB</span>)
+
+<span class="c">// WeakMap — GC-friendly, object keys only</span>
+<span class="k">const</span> <span class="v">cache</span> = <span class="k">new</span> <span class="cl">WeakMap</span>()
+<span class="v">cache</span>.<span class="f">set</span>(<span class="v">domNode</span>, { clicks: <span class="n">0</span> })  <span class="c">// auto-GC'd with domNode</span>
+
+<span class="c">// WeakRef — hold object without preventing GC</span>
+<span class="k">const</span> <span class="v">ref</span> = <span class="k">new</span> <span class="cl">WeakRef</span>(<span class="v">heavyObject</span>)
+<span class="k">const</span> <span class="v">obj</span> = <span class="v">ref</span>.<span class="f">deref</span>()  <span class="c">// may be undefined if GC'd</span></pre>
+  </div>
+</div>
+
+<div class="card a-yel">
+  <div class="ch"><div class="ci">🔣</div><span class="ct">Symbols, Iterators &amp; Generators</span></div>
+  <div class="cb">
+    <pre><span class="c">// Symbol — unique, never equal to anything else</span>
+<span class="k">const</span> <span class="v">id</span> = <span class="cl">Symbol</span>(<span class="s">'id'</span>)
+<span class="k">const</span> <span class="v">obj</span> = { [<span class="v">id</span>]: <span class="n">42</span> }      <span class="c">// private-ish property</span>
+<span class="cl">Symbol</span>.<span class="f">for</span>(<span class="s">'shared'</span>)          <span class="c">// global registry</span>
+
+<span class="c">// Custom iterator</span>
+<span class="k">const</span> <span class="v">range</span> = {
+  <span class="k">from</span>: <span class="n">1</span>, <span class="k">to</span>: <span class="n">5</span>,
+  [<span class="cl">Symbol</span>.iterator]() {
+    <span class="k">let</span> <span class="v">current</span> = <span class="k">this</span>.<span class="k">from</span>
+    <span class="k">const</span> <span class="v">last</span> = <span class="k">this</span>.<span class="k">to</span>
+    <span class="k">return</span> {
+      <span class="f">next</span>() {
+        <span class="k">return</span> <span class="v">current</span> <= <span class="v">last</span>
+          ? { value: <span class="v">current</span>++, done: <span class="n">false</span> }
+          : { value: <span class="n">undefined</span>, done: <span class="n">true</span> }
+      }
+    }
+  }
+}
+<span class="k">for</span> (<span class="k">const</span> <span class="v">n</span> <span class="k">of</span> <span class="v">range</span>) <span class="f">console</span>.<span class="f">log</span>(<span class="v">n</span>)
+
+<span class="c">// Generator — pauseable function</span>
+<span class="k">function</span>* <span class="f">infiniteIds</span>() {
+  <span class="k">let</span> <span class="v">id</span> = <span class="n">1</span>
+  <span class="k">while</span> (<span class="n">true</span>) <span class="k">yield</span> <span class="v">id</span>++
+}
+<span class="k">const</span> <span class="v">gen</span> = <span class="f">infiniteIds</span>()
+<span class="v">gen</span>.<span class="f">next</span>().value  <span class="c">// 1, 2, 3, ...</span>
+
+<span class="c">// Async generator</span>
+<span class="k">async function</span>* <span class="f">streamData</span>(<span class="v">url</span>) {
+  <span class="k">const</span> <span class="v">res</span> = <span class="k">await</span> <span class="f">fetch</span>(<span class="v">url</span>)
+  <span class="k">for await</span> (<span class="k">const</span> <span class="v">chunk</span> <span class="k">of</span> <span class="v">res</span>.body) <span class="k">yield</span> <span class="v">chunk</span>
+}</pre>
+  </div>
+</div>
+
+<div class="card a-yel">
+  <div class="ch"><div class="ci">🏗</div><span class="ct">Classes — Private, Static, Decorators</span></div>
+  <div class="cb">
+    <pre><span class="k">class</span> <span class="cl">EventEmitter</span> {
+  <span class="c">// Private fields (ES2022) — truly private</span>
+  #listeners = <span class="k">new</span> <span class="cl">Map</span>()
+  #count = <span class="n">0</span>
+
+  <span class="c">// Static field + method</span>
+  <span class="k">static</span> <span class="v">instances</span> = <span class="n">0</span>
+  <span class="k">static</span> <span class="f">create</span>() { <span class="k">return new</span> <span class="k">this</span>() }
+
+  <span class="c">// Private method</span>
+  #<span class="f">validate</span>(<span class="v">event</span>) { <span class="k">return typeof</span> <span class="v">event</span> === <span class="s">'string'</span> }
+
+  <span class="f">on</span>(<span class="v">event</span>, <span class="v">cb</span>) {
+    <span class="k">if</span> (!<span class="k">this</span>.#<span class="f">validate</span>(<span class="v">event</span>)) <span class="k">throw new</span> <span class="cl">TypeError</span>(<span class="s">'Event must be a string'</span>)
+    <span class="k">if</span> (!<span class="k">this</span>.#listeners.<span class="f">has</span>(<span class="v">event</span>)) <span class="k">this</span>.#listeners.<span class="f">set</span>(<span class="v">event</span>, [])
+    <span class="k">this</span>.#listeners.<span class="f">get</span>(<span class="v">event</span>).<span class="f">push</span>(<span class="v">cb</span>)
+    <span class="k">return this</span>  <span class="c">// chainable</span>
+  }
+
+  <span class="f">emit</span>(<span class="v">event</span>, ...<span class="v">args</span>) {
+    <span class="k">this</span>.#listeners.<span class="f">get</span>(<span class="v">event</span>)?.<span class="f">forEach</span>(<span class="v">cb</span> => <span class="v">cb</span>(...<span class="v">args</span>))
+    <span class="k">return this</span>
+  }
+}
+
+<span class="c">// Check private field without try/catch</span>
+<span class="k">class</span> <span class="cl">Cls</span> {
+  #x
+  <span class="k">static</span> <span class="f">isInstance</span>(<span class="v">obj</span>) { <span class="k">return</span> #x <span class="k">in</span> <span class="v">obj</span> }
+}</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     ASYNC JAVASCRIPT
+════════════════════════════════════════════ -->
+<div id="async" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(0,229,255,.1);color:var(--cyan);">⏳</div>
+  <div>
+    <div class="sh-title">Async JavaScript — Deep Dive<span class="tg tg-adv">Advanced</span></div>
+    <div class="sh-sub">Promises, async/await, error handling, concurrency, AbortController</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-cyan">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">Promise Combinators</span></div>
+  <div class="cb">
+    <pre><span class="c">// all — all resolve or first reject</span>
+<span class="k">const</span> [<span class="v">user</span>, <span class="v">posts</span>] = <span class="k">await</span> <span class="cl">Promise</span>.<span class="f">all</span>([<span class="f">getUser</span>(), <span class="f">getPosts</span>()])
+
+<span class="c">// allSettled — wait for all, never throws (ES2020)</span>
+<span class="k">const</span> <span class="v">results</span> = <span class="k">await</span> <span class="cl">Promise</span>.<span class="f">allSettled</span>([<span class="f">p1</span>(), <span class="f">p2</span>(), <span class="f">p3</span>()])
+<span class="v">results</span>.<span class="f">forEach</span>((<span class="v">r</span>) => {
+  <span class="k">if</span> (<span class="v">r</span>.status === <span class="s">'fulfilled'</span>) <span class="f">handle</span>(<span class="v">r</span>.value)
+  <span class="k">if</span> (<span class="v">r</span>.status === <span class="s">'rejected'</span>)  <span class="f">log</span>(<span class="v">r</span>.reason)
+})
+
+<span class="c">// race — first settled (resolve or reject)</span>
+<span class="k">const</span> <span class="v">result</span> = <span class="k">await</span> <span class="cl">Promise</span>.<span class="f">race</span>([<span class="f">fetchData</span>(), <span class="f">timeout</span>(<span class="n">5000</span>)])
+
+<span class="c">// any — first fulfilled, throws AggregateError if all fail (ES2021)</span>
+<span class="k">const</span> <span class="v">fastest</span> = <span class="k">await</span> <span class="cl">Promise</span>.<span class="f">any</span>([<span class="f">cdn1</span>(), <span class="f">cdn2</span>(), <span class="f">cdn3</span>()])
+
+<span class="c">// Promise.withResolvers() — ES2024</span>
+<span class="k">const</span> { promise, resolve, reject } = <span class="cl">Promise</span>.<span class="f">withResolvers</span>()
+<span class="c">// Replaces: new Promise((res, rej) => { resolve=res; reject=rej })</span>
+<span class="v">setTimeout</span>(() => <span class="f">resolve</span>(<span class="s">'done'</span>), <span class="n">1000</span>)
+<span class="k">await</span> <span class="v">promise</span>  <span class="c">// waits 1 second</span></pre>
+  </div>
+</div>
+
+<div class="card a-cyan">
+  <div class="ch"><div class="ci">🚦</div><span class="ct">Async Patterns &amp; AbortController</span></div>
+  <div class="cb">
+    <pre><span class="c">// Top-level await (in ES modules)</span>
+<span class="k">const</span> <span class="v">config</span> = <span class="k">await</span> <span class="f">loadConfig</span>()
+<span class="k">export default</span> <span class="v">config</span>
+
+<span class="c">// Cancellable fetch with AbortController</span>
+<span class="k">function</span> <span class="f">fetchWithTimeout</span>(<span class="v">url</span>, <span class="v">ms</span> = <span class="n">5000</span>) {
+  <span class="k">const</span> <span class="v">controller</span> = <span class="k">new</span> <span class="cl">AbortController</span>()
+  <span class="k">const</span> <span class="v">id</span> = <span class="f">setTimeout</span>(() => <span class="v">controller</span>.<span class="f">abort</span>(), <span class="v">ms</span>)
+  <span class="k">return</span> <span class="f">fetch</span>(<span class="v">url</span>, { signal: <span class="v">controller</span>.signal })
+    .<span class="f">finally</span>(() => <span class="f">clearTimeout</span>(<span class="v">id</span>))
+}
+
+<span class="c">// In React useEffect — cancel on unmount</span>
+<span class="d">useEffect</span>(() => {
+  <span class="k">const</span> <span class="v">ctrl</span> = <span class="k">new</span> <span class="cl">AbortController</span>()
+  <span class="f">fetch</span>(<span class="s">'/api/data'</span>, { signal: <span class="v">ctrl</span>.signal })
+    .<span class="f">then</span>(<span class="v">r</span> => <span class="v">r</span>.<span class="f">json</span>())
+    .<span class="f">then</span>(<span class="f">setData</span>)
+    .<span class="f">catch</span>(<span class="v">e</span> => { <span class="k">if</span> (<span class="v">e</span>.name !== <span class="s">'AbortError'</span>) <span class="k">throw</span> <span class="v">e</span> })
+  <span class="k">return</span> () => <span class="v">ctrl</span>.<span class="f">abort</span>()
+}, [])
+
+<span class="c">// Retry with exponential backoff</span>
+<span class="k">async function</span> <span class="f">withRetry</span>(<span class="v">fn</span>, <span class="v">retries</span> = <span class="n">3</span>, <span class="v">delay</span> = <span class="n">500</span>) {
+  <span class="k">for</span> (<span class="k">let</span> <span class="v">i</span> = <span class="n">0</span>; <span class="v">i</span> <= <span class="v">retries</span>; <span class="v">i</span>++) {
+    <span class="k">try</span> { <span class="k">return await</span> <span class="f">fn</span>() }
+    <span class="k">catch</span> (<span class="v">err</span>) {
+      <span class="k">if</span> (<span class="v">i</span> === <span class="v">retries</span>) <span class="k">throw</span> <span class="v">err</span>
+      <span class="k">await new</span> <span class="cl">Promise</span>(<span class="v">r</span> => <span class="f">setTimeout</span>(<span class="v">r</span>, <span class="v">delay</span> * <span class="n">2</span> ** <span class="v">i</span>))
+    }
+  }
+}</pre>
+  </div>
+</div>
+
+<div class="card a-blue">
+  <div class="ch"><div class="ci">🔀</div><span class="ct">Concurrency Control</span></div>
+  <div class="cb">
+    <pre><span class="c">// Rate-limit concurrent requests</span>
+<span class="k">async function</span> <span class="f">pLimit</span>(<span class="v">tasks</span>, <span class="v">concurrency</span>) {
+  <span class="k">const</span> <span class="v">results</span> = []
+  <span class="k">const</span> <span class="v">executing</span> = <span class="k">new</span> <span class="cl">Set</span>()
+  <span class="k">for</span> (<span class="k">const</span> <span class="v">task</span> <span class="k">of</span> <span class="v">tasks</span>) {
+    <span class="k">const</span> <span class="v">p</span> = <span class="v">task</span>().<span class="f">finally</span>(() => <span class="v">executing</span>.<span class="f">delete</span>(<span class="v">p</span>))
+    <span class="v">results</span>.<span class="f">push</span>(<span class="v">p</span>)
+    <span class="v">executing</span>.<span class="f">add</span>(<span class="v">p</span>)
+    <span class="k">if</span> (<span class="v">executing</span>.size >= <span class="v">concurrency</span>)
+      <span class="k">await</span> <span class="cl">Promise</span>.<span class="f">race</span>(<span class="v">executing</span>)
+  }
+  <span class="k">return</span> <span class="cl">Promise</span>.<span class="f">all</span>(<span class="v">results</span>)
+}
+<span class="c">// Usage: await pLimit(urls.map(u => () => fetch(u)), 3)</span>
+
+<span class="c">// Queue class for sequential processing</span>
+<span class="k">class</span> <span class="cl">AsyncQueue</span> {
+  #queue = []
+  #running = <span class="n">false</span>
+  <span class="f">add</span>(<span class="v">task</span>) {
+    <span class="k">return new</span> <span class="cl">Promise</span>((<span class="v">resolve</span>, <span class="v">reject</span>) => {
+      <span class="k">this</span>.#queue.<span class="f">push</span>({ task, resolve, reject })
+      <span class="k">this</span>.#<span class="f">run</span>()
+    })
+  }
+  <span class="k">async</span> #<span class="f">run</span>() {
+    <span class="k">if</span> (<span class="k">this</span>.#running) <span class="k">return</span>
+    <span class="k">this</span>.#running = <span class="n">true</span>
+    <span class="k">while</span> (<span class="k">this</span>.#queue.length) {
+      <span class="k">const</span> { task, resolve, reject } = <span class="k">this</span>.#queue.<span class="f">shift</span>()
+      <span class="k">await</span> <span class="f">task</span>().<span class="f">then</span>(<span class="v">resolve</span>).<span class="f">catch</span>(<span class="v">reject</span>)
+    }
+    <span class="k">this</span>.#running = <span class="n">false</span>
+  }
+}</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     JS PATTERNS
+════════════════════════════════════════════ -->
+<div id="patterns-js" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(0,245,160,.1);color:var(--green);">🏛</div>
+  <div>
+    <div class="sh-title">JavaScript Patterns<span class="tg tg-adv">Advanced</span></div>
+    <div class="sh-sub">Closures, Proxy, design patterns, functional programming, memoization</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">🔒</div><span class="ct">Closures &amp; Currying</span></div>
+  <div class="cb">
+    <pre><span class="c">// Closure — function + its lexical scope</span>
+<span class="k">function</span> <span class="f">makeCounter</span>(<span class="v">initial</span> = <span class="n">0</span>) {
+  <span class="k">let</span> <span class="v">count</span> = <span class="v">initial</span>  <span class="c">// captured</span>
+  <span class="k">return</span> {
+    <span class="f">increment</span>: () => ++<span class="v">count</span>,
+    <span class="f">decrement</span>: () => --<span class="v">count</span>,
+    <span class="f">value</span>:     () => <span class="v">count</span>,
+    <span class="f">reset</span>:     () => { <span class="v">count</span> = <span class="v">initial</span> },
+  }
+}
+
+<span class="c">// Memoization</span>
+<span class="k">function</span> <span class="f">memoize</span>(<span class="v">fn</span>) {
+  <span class="k">const</span> <span class="v">cache</span> = <span class="k">new</span> <span class="cl">Map</span>()
+  <span class="k">return function</span>(...<span class="v">args</span>) {
+    <span class="k">const</span> <span class="v">key</span> = <span class="cl">JSON</span>.<span class="f">stringify</span>(<span class="v">args</span>)
+    <span class="k">if</span> (<span class="v">cache</span>.<span class="f">has</span>(<span class="v">key</span>)) <span class="k">return</span> <span class="v">cache</span>.<span class="f">get</span>(<span class="v">key</span>)
+    <span class="k">const</span> <span class="v">result</span> = <span class="v">fn</span>.<span class="f">apply</span>(<span class="k">this</span>, <span class="v">args</span>)
+    <span class="v">cache</span>.<span class="f">set</span>(<span class="v">key</span>, <span class="v">result</span>)
+    <span class="k">return</span> <span class="v">result</span>
+  }
+}
+
+<span class="c">// Curry — auto-curried</span>
+<span class="k">const</span> <span class="f">curry</span> = (<span class="v">fn</span>) =>
+  (<span class="k">function</span> <span class="f">curried</span>(...<span class="v">args</span>) {
+    <span class="k">return</span> <span class="v">args</span>.length >= <span class="v">fn</span>.length
+      ? <span class="v">fn</span>(<span class="v">args</span>)
+      : (...<span class="v">more</span>) => <span class="f">curried</span>(...<span class="v">args</span>, ...<span class="v">more</span>)
+  })
+
+<span class="c">// Partial application</span>
+<span class="k">const</span> <span class="f">add</span> = (<span class="v">a</span>, <span class="v">b</span>, <span class="v">c</span>) => <span class="v">a</span> + <span class="v">b</span> + <span class="v">c</span>
+<span class="k">const</span> <span class="f">add10</span> = <span class="f">add</span>.<span class="f">bind</span>(<span class="n">null</span>, <span class="n">10</span>)
+<span class="f">add10</span>(<span class="n">5</span>, <span class="n">3</span>)  <span class="c">// 18</span></pre>
+  </div>
+</div>
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">🪄</div><span class="ct">Proxy &amp; Reflect</span></div>
+  <div class="cb">
+    <pre><span class="c">// Proxy — intercept object operations</span>
+<span class="k">const</span> <span class="v">handler</span> = {
+  <span class="c">// Intercept property access</span>
+  <span class="f">get</span>(<span class="v">target</span>, <span class="v">prop</span>, <span class="v">receiver</span>) {
+    <span class="f">console</span>.<span class="f">log</span>(<span class="s">`Reading ${prop}`</span>)
+    <span class="k">return</span> <span class="cl">Reflect</span>.<span class="f">get</span>(<span class="v">target</span>, <span class="v">prop</span>, <span class="v">receiver</span>)
+  },
+  <span class="c">// Intercept property assignment</span>
+  <span class="f">set</span>(<span class="v">target</span>, <span class="v">prop</span>, <span class="v">value</span>) {
+    <span class="k">if</span> (<span class="k">typeof</span> <span class="v">value</span> !== <span class="s">'number'</span>) <span class="k">throw new</span> <span class="cl">TypeError</span>(<span class="s">'Must be number'</span>)
+    <span class="k">return</span> <span class="cl">Reflect</span>.<span class="f">set</span>(<span class="v">target</span>, <span class="v">prop</span>, <span class="v">value</span>)
+  },
+  <span class="c">// Intercept function calls</span>
+  <span class="f">apply</span>(<span class="v">target</span>, <span class="v">thisArg</span>, <span class="v">args</span>) {
+    <span class="f">console</span>.<span class="f">log</span>(<span class="s">`Called with`</span>, <span class="v">args</span>)
+    <span class="k">return</span> <span class="cl">Reflect</span>.<span class="f">apply</span>(<span class="v">target</span>, <span class="v">thisArg</span>, <span class="v">args</span>)
+  },
+}
+<span class="k">const</span> <span class="v">proxy</span> = <span class="k">new</span> <span class="cl">Proxy</span>(<span class="v">target</span>, <span class="v">handler</span>)
+
+<span class="c">// Observable object — auto-notify on change</span>
+<span class="k">function</span> <span class="f">observable</span>(<span class="v">obj</span>, <span class="v">onChange</span>) {
+  <span class="k">return new</span> <span class="cl">Proxy</span>(<span class="v">obj</span>, {
+    <span class="f">set</span>(<span class="v">target</span>, <span class="v">key</span>, <span class="v">value</span>) {
+      <span class="k">const</span> <span class="v">old</span> = <span class="v">target</span>[<span class="v">key</span>]
+      <span class="cl">Reflect</span>.<span class="f">set</span>(<span class="v">target</span>, <span class="v">key</span>, <span class="v">value</span>)
+      <span class="v">onChange</span>({ <span class="v">key</span>, <span class="v">old</span>, <span class="v">value</span> })
+      <span class="k">return true</span>
+    }
+  })
+}</pre>
+  </div>
+</div>
+
+<div class="card a-lime">
+  <div class="ch"><div class="ci">🔧</div><span class="ct">Functional Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// Pipe — left-to-right composition</span>
+<span class="k">const</span> <span class="f">pipe</span> = (...<span class="v">fns</span>) => (<span class="v">x</span>) => <span class="v">fns</span>.<span class="f">reduce</span>((<span class="v">v</span>, <span class="v">f</span>) => <span class="f">f</span>(<span class="v">v</span>), <span class="v">x</span>)
+<span class="k">const</span> <span class="f">compose</span> = (...<span class="v">fns</span>) => (<span class="v">x</span>) => <span class="v">fns</span>.<span class="f">reduceRight</span>((<span class="v">v</span>, <span class="v">f</span>) => <span class="f">f</span>(<span class="v">v</span>), <span class="v">x</span>)
+
+<span class="k">const</span> <span class="v">process</span> = <span class="f">pipe</span>(
+  <span class="v">str</span> => <span class="v">str</span>.<span class="f">trim</span>(),
+  <span class="v">str</span> => <span class="v">str</span>.<span class="f">toLowerCase</span>(),
+  <span class="v">str</span> => <span class="v">str</span>.<span class="f">replace</span>(<span class="s">/\s+/g</span>, <span class="s">'-'</span>)
+)
+
+<span class="c">// Transducer — composable, efficient transforms</span>
+<span class="k">const</span> <span class="f">map</span>    = <span class="v">f</span> => <span class="v">reducer</span> => (<span class="v">acc</span>, <span class="v">x</span>) => <span class="v">reducer</span>(<span class="v">acc</span>, <span class="f">f</span>(<span class="v">x</span>))
+<span class="k">const</span> <span class="f">filter</span> = <span class="v">p</span> => <span class="v">reducer</span> => (<span class="v">acc</span>, <span class="v">x</span>) => <span class="f">p</span>(<span class="v">x</span>) ? <span class="v">reducer</span>(<span class="v">acc</span>, <span class="v">x</span>) : <span class="v">acc</span>
+
+<span class="c">// Option/Maybe — handle null safely</span>
+<span class="k">const</span> <span class="cl">Maybe</span> = {
+  <span class="f">of</span>:       <span class="v">v</span> => ({ value: <span class="v">v</span>, isNothing: <span class="v">v</span> == <span class="n">null</span> }),
+  <span class="f">map</span>:      (<span class="v">m</span>, <span class="v">f</span>) => <span class="v">m</span>.isNothing ? <span class="v">m</span> : <span class="cl">Maybe</span>.<span class="f">of</span>(<span class="f">f</span>(<span class="v">m</span>.value)),
+  <span class="f">getOrElse</span>: (<span class="v">m</span>, <span class="v">d</span>) => <span class="v">m</span>.isNothing ? <span class="v">d</span> : <span class="v">m</span>.value,
+}
+<span class="k">const</span> <span class="v">result</span> = <span class="cl">Maybe</span>.<span class="f">of</span>(<span class="v">user</span>)
+<span class="v">result</span>
+  |> <span class="cl">Maybe</span>.<span class="f">map</span>(<span class="op">%</span>, <span class="v">u</span> => <span class="v">u</span>.profile)  <span class="c">// Pipeline operator proposal</span>
+  |> <span class="cl">Maybe</span>.<span class="f">getOrElse</span>(<span class="op">%</span>, {})</pre>
+  </div>
+</div>
+
+<div class="card a-lime">
+  <div class="ch"><div class="ci">📐</div><span class="ct">Design Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// Singleton</span>
+<span class="k">class</span> <span class="cl">Database</span> {
+  <span class="k">static</span> #instance
+  <span class="k">static</span> <span class="f">getInstance</span>() {
+    <span class="k">return</span> (<span class="k">this</span>.#instance ??= <span class="k">new</span> <span class="k">this</span>())
+  }
+  #<span class="f">constructor</span>() {}  <span class="c">// private = no direct new</span>
+}
+
+<span class="c">// Observer (pub/sub)</span>
+<span class="k">class</span> <span class="cl">EventBus</span> {
+  #events = <span class="k">new</span> <span class="cl">Map</span>()
+  <span class="f">on</span>(<span class="v">e</span>, <span class="v">fn</span>)  { (<span class="k">this</span>.#events.<span class="f">get</span>(<span class="v">e</span>) ?? <span class="k">this</span>.#events.<span class="f">set</span>(<span class="v">e</span>, <span class="k">new</span> <span class="cl">Set</span>()).<span class="f">get</span>(<span class="v">e</span>)).<span class="f">add</span>(<span class="v">fn</span>) }
+  <span class="f">off</span>(<span class="v">e</span>, <span class="v">fn</span>) { <span class="k">this</span>.#events.<span class="f">get</span>(<span class="v">e</span>)?.<span class="f">delete</span>(<span class="v">fn</span>) }
+  <span class="f">emit</span>(<span class="v">e</span>, ...<span class="v">a</span>) { <span class="k">this</span>.#events.<span class="f">get</span>(<span class="v">e</span>)?.<span class="f">forEach</span>(<span class="v">fn</span> => <span class="f">fn</span>(...<span class="v">a</span>)) }
+}
+
+<span class="c">// Builder pattern</span>
+<span class="k">class</span> <span class="cl">QueryBuilder</span> {
+  #table = <span class="s">''</span>; #conditions = []; #limit = <span class="n">null</span>
+  <span class="f">from</span>(<span class="v">t</span>)    { <span class="k">this</span>.#table = <span class="v">t</span>; <span class="k">return this</span> }
+  <span class="f">where</span>(<span class="v">c</span>)   { <span class="k">this</span>.#conditions.<span class="f">push</span>(<span class="v">c</span>); <span class="k">return this</span> }
+  <span class="f">limit</span>(<span class="v">n</span>)   { <span class="k">this</span>.#limit = <span class="v">n</span>; <span class="k">return this</span> }
+  <span class="f">build</span>()    {
+    <span class="k">let</span> <span class="v">q</span> = <span class="s">`SELECT * FROM ${this.#table}`</span>
+    <span class="k">if</span> (<span class="k">this</span>.#conditions.length) <span class="v">q</span> += <span class="s">` WHERE ${this.#conditions.join(' AND ')}`</span>
+    <span class="k">if</span> (<span class="k">this</span>.#limit) <span class="v">q</span> += <span class="s">` LIMIT ${this.#limit}`</span>
+    <span class="k">return</span> <span class="v">q</span>
+  }
+}
+<span class="c">// new QueryBuilder().from('users').where('age > 18').limit(10).build()</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     REACT CORE
+════════════════════════════════════════════ -->
+<div id="react-core" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(97,218,251,.1);color:var(--react);">⚛</div>
+  <div>
+    <div class="sh-title">React Core Concepts</div>
+    <div class="sh-sub">JSX, rendering, reconciliation, keys, refs, portals, context</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-react">
+  <div class="ch"><div class="ci">🧩</div><span class="ct">JSX, Rendering &amp; Conditional Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// Conditional rendering patterns</span>
+{<span class="v">isLoggedIn</span> &amp;&amp; <span class="k">&lt;</span><span class="cl">Dashboard</span> <span class="k">/&gt;</span>}
+{<span class="v">isLoggedIn</span> ? <span class="k">&lt;</span><span class="cl">Dashboard</span> <span class="k">/&gt;</span> : <span class="k">&lt;</span><span class="cl">Login</span> <span class="k">/&gt;</span>}
+{<span class="v">count</span> > <span class="n">0</span> &amp;&amp; <span class="k">&lt;p&gt;</span>{<span class="v">count</span>} items<span class="k">&lt;/p&gt;</span>}
+
+<span class="c">// Early return pattern (cleaner than ternary nesting)</span>
+<span class="k">function</span> <span class="f">UserProfile</span>({ <span class="v">user</span> }) {
+  <span class="k">if</span> (!<span class="v">user</span>) <span class="k">return</span> <span class="k">&lt;</span><span class="cl">Skeleton</span> <span class="k">/&gt;</span>
+  <span class="k">if</span> (<span class="v">user</span>.banned) <span class="k">return</span> <span class="k">&lt;</span><span class="cl">Banned</span> <span class="k">/&gt;</span>
+  <span class="k">return</span> <span class="k">&lt;</span><span class="cl">Profile</span> user={<span class="v">user</span>} <span class="k">/&gt;</span>
+}
+
+<span class="c">// List rendering — always use stable keys</span>
+{<span class="v">items</span>.<span class="f">map</span>((<span class="v">item</span>) => (
+  <span class="k">&lt;</span><span class="cl">Item</span> key={<span class="v">item</span>.id} data={<span class="v">item</span>} <span class="k">/&gt;</span>  <span class="c">// id > index as key</span>
+))}
+
+<span class="c">// Fragment — avoid wrapper div</span>
+<span class="k">&lt;&gt;&lt;</span><span class="cl">A</span> <span class="k">/&gt;&lt;</span><span class="cl">B</span> <span class="k">/&gt;&lt;/&gt;</span>
+<span class="k">&lt;</span><span class="cl">React.Fragment</span> key={<span class="v">id</span>}<span class="k">&gt;</span>...<span class="k">&lt;/</span><span class="cl">React.Fragment</span><span class="k">&gt;</span>  <span class="c">// with key</span>
+
+<span class="c">// Render props pattern</span>
+<span class="k">&lt;</span><span class="cl">DataFetcher</span> url=<span class="s">"/api"</span> render={(<span class="v">data</span>) => <span class="k">&lt;</span><span class="cl">Table</span> data={<span class="v">data</span>} <span class="k">/&gt;</span>} <span class="k">/&gt;</span>
+
+<span class="c">// cloneElement — enhance children</span>
+<span class="cl">React</span>.<span class="f">cloneElement</span>(<span class="v">child</span>, { extraProp: <span class="n">true</span> })</pre>
+  </div>
+</div>
+
+<div class="card a-react">
+  <div class="ch"><div class="ci">🔗</div><span class="ct">Refs, forwardRef &amp; useImperativeHandle</span></div>
+  <div class="cb">
+    <pre><span class="c">// useRef — DOM access + mutable value (no re-render)</span>
+<span class="k">const</span> <span class="v">inputRef</span> = <span class="d">useRef</span>&lt;<span class="t">HTMLInputElement</span>&gt;(<span class="n">null</span>)
+<span class="k">const</span> <span class="v">prevValue</span> = <span class="d">useRef</span>(<span class="v">value</span>)  <span class="c">// track previous value</span>
+<span class="k">const</span> <span class="v">timerRef</span>  = <span class="d">useRef</span>&lt;<span class="t">ReturnType</span>&lt;<span class="k">typeof</span> setTimeout&gt;&gt;()
+
+<span class="c">// Access DOM element</span>
+<span class="v">inputRef</span>.current?.<span class="f">focus</span>()
+
+<span class="c">// forwardRef — pass ref through to child</span>
+<span class="k">const</span> <span class="cl">Input</span> = <span class="cl">React</span>.<span class="f">forwardRef</span>&lt;<span class="t">HTMLInputElement</span>, <span class="t">Props</span>&gt;(
+  ({ label, ...props }, ref) => (
+    <span class="k">&lt;div&gt;</span>
+      <span class="k">&lt;label&gt;</span>{label}<span class="k">&lt;/label&gt;</span>
+      <span class="k">&lt;input</span> ref={ref} {...props} <span class="k">/&gt;</span>
+    <span class="k">&lt;/div&gt;</span>
+  )
+)
+
+<span class="c">// useImperativeHandle — expose custom API via ref</span>
+<span class="k">const</span> <span class="cl">Modal</span> = <span class="cl">React</span>.<span class="f">forwardRef</span>((<span class="v">props</span>, <span class="v">ref</span>) => {
+  <span class="k">const</span> [<span class="v">isOpen</span>, <span class="v">setIsOpen</span>] = <span class="d">useState</span>(<span class="n">false</span>)
+  <span class="d">useImperativeHandle</span>(<span class="v">ref</span>, () => ({
+    <span class="f">open</span>:  () => <span class="f">setIsOpen</span>(<span class="n">true</span>),
+    <span class="f">close</span>: () => <span class="f">setIsOpen</span>(<span class="n">false</span>),
+  }), [])
+  <span class="k">return</span> <span class="v">isOpen</span> ? <span class="k">&lt;</span><span class="cl">ModalContent</span> {...<span class="v">props</span>} <span class="k">/&gt;</span> : <span class="n">null</span>
+})
+<span class="c">// Usage: modalRef.current?.open()</span></pre>
+  </div>
+</div>
+
+<div class="card a-blue">
+  <div class="ch"><div class="ci">🌐</div><span class="ct">Context — Advanced Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// Type-safe context with default error</span>
+<span class="k">const</span> <span class="cl">AuthContext</span> = <span class="cl">React</span>.<span class="f">createContext</span>&lt;<span class="t">AuthState</span> | <span class="n">null</span>&gt;(<span class="n">null</span>)
+
+<span class="k">export function</span> <span class="f">useAuth</span>() {
+  <span class="k">const</span> <span class="v">ctx</span> = <span class="d">useContext</span>(<span class="cl">AuthContext</span>)
+  <span class="k">if</span> (!<span class="v">ctx</span>) <span class="k">throw new</span> <span class="cl">Error</span>(<span class="s">'useAuth must be inside AuthProvider'</span>)
+  <span class="k">return</span> <span class="v">ctx</span>
+}
+
+<span class="c">// Split context — read vs dispatch (avoid re-renders)</span>
+<span class="k">const</span> <span class="cl">StateCtx</span>  = <span class="cl">React</span>.<span class="f">createContext</span>(<span class="n">null</span>)
+<span class="k">const</span> <span class="cl">DispatchCtx</span> = <span class="cl">React</span>.<span class="f">createContext</span>(<span class="n">null</span>)
+
+<span class="k">export function</span> <span class="cl">Provider</span>({ children }) {
+  <span class="k">const</span> [<span class="v">state</span>, <span class="v">dispatch</span>] = <span class="d">useReducer</span>(<span class="v">reducer</span>, <span class="v">initialState</span>)
+  <span class="k">return</span> (
+    <span class="k">&lt;</span><span class="cl">DispatchCtx.Provider</span> value={<span class="d">useMemo</span>(() => <span class="v">dispatch</span>, [])}<span class="k">&gt;</span>
+      <span class="k">&lt;</span><span class="cl">StateCtx.Provider</span> value={<span class="v">state</span>}<span class="k">&gt;</span>
+        {children}
+      <span class="k">&lt;/</span><span class="cl">StateCtx.Provider</span><span class="k">&gt;</span>
+    <span class="k">&lt;/</span><span class="cl">DispatchCtx.Provider</span><span class="k">&gt;</span>
+  )
+}
+<span class="c">// Components that only dispatch don't re-render on state change</span>
+
+<span class="c">// Portal — render outside component tree</span>
+<span class="cl">ReactDOM</span>.<span class="f">createPortal</span>(<span class="k">&lt;</span><span class="cl">Modal</span> <span class="k">/&gt;</span>, document.<span class="f">getElementById</span>(<span class="s">'portal-root'</span>)!)</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     HOOKS DEEP DIVE
+════════════════════════════════════════════ -->
+<div id="hooks" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(189,140,247,.1);color:var(--purp);">🪝</div>
+  <div>
+    <div class="sh-title">Hooks — Deep Dive<span class="tg tg-adv">Advanced</span></div>
+    <div class="sh-sub">Every hook, custom hooks, rules, advanced patterns</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-purp">
+  <div class="ch"><div class="ci">🔄</div><span class="ct">useEffect — The Correct Mental Model</span></div>
+  <div class="cb">
+    <div class="al al-bad"><span class="al-i">🚫</span>Don't think of useEffect as "lifecycle". Think: "synchronise with external system". If no external system, you probably don't need it.</div>
+    <pre><span class="c">// Dependency array guide</span>
+<span class="d">useEffect</span>(() => { ... })          <span class="c">// every render — almost never right</span>
+<span class="d">useEffect</span>(() => { ... }, [])      <span class="c">// mount only — for subscriptions</span>
+<span class="d">useEffect</span>(() => { ... }, [<span class="v">id</span>])   <span class="c">// when id changes</span>
+
+<span class="c">// Cleanup — unsubscribe, cancel, clear</span>
+<span class="d">useEffect</span>(() => {
+  <span class="k">const</span> <span class="v">sub</span> = <span class="v">store</span>.<span class="f">subscribe</span>(<span class="f">setData</span>)
+  <span class="k">return</span> () => <span class="v">sub</span>.<span class="f">unsubscribe</span>()  <span class="c">// cleanup fn</span>
+}, [])
+
+<span class="c">// Race condition safe — ignore stale responses</span>
+<span class="d">useEffect</span>(() => {
+  <span class="k">let</span> <span class="v">ignore</span> = <span class="n">false</span>
+  <span class="f">fetchUser</span>(<span class="v">id</span>).<span class="f">then</span>((<span class="v">data</span>) => {
+    <span class="k">if</span> (!<span class="v">ignore</span>) <span class="f">setUser</span>(<span class="v">data</span>)
+  })
+  <span class="k">return</span> () => { <span class="v">ignore</span> = <span class="n">true</span> }
+}, [<span class="v">id</span>])
+
+<span class="c">// useLayoutEffect — fires sync before paint (DOM mutations)</span>
+<span class="d">useLayoutEffect</span>(() => {
+  <span class="c">// Measure DOM, set scroll position</span>
+  <span class="v">ref</span>.current.<span class="v">scrollTop</span> = <span class="n">0</span>
+}, [<span class="v">route</span>])
+
+<span class="c">// useInsertionEffect — CSS-in-JS libraries only</span>
+<span class="c">// Fires before layout paint — inject styles here</span></pre>
+  </div>
+</div>
+
+<div class="card a-purp">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">useMemo, useCallback — When to Use</span></div>
+  <div class="cb">
+    <div class="al al-warn"><span class="al-i">⚠</span>Don't over-memoize. With React Compiler (React 19) most manual memoization is automated.</div>
+    <pre><span class="c">// useMemo — expensive computation</span>
+<span class="k">const</span> <span class="v">sorted</span> = <span class="d">useMemo</span>(() =>
+  [...<span class="v">items</span>].<span class="f">sort</span>((<span class="v">a</span>, <span class="v">b</span>) => <span class="v">a</span>.name.<span class="f">localeCompare</span>(<span class="v">b</span>.name)),
+  [<span class="v">items</span>]  <span class="c">// only re-sort when items changes</span>
+)
+
+<span class="c">// useCallback — stable fn reference for child props</span>
+<span class="k">const</span> <span class="v">handleSubmit</span> = <span class="d">useCallback</span>((<span class="v">e</span>) => {
+  <span class="v">e</span>.<span class="f">preventDefault</span>()
+  <span class="f">submitForm</span>(<span class="v">values</span>)
+}, [<span class="v">values</span>])    <span class="c">// stable unless values changes</span>
+
+<span class="c">// When to memoize ✅ vs not ❌</span>
+<span class="c">// ✅ value passed to React.memo() child</span>
+<span class="c">// ✅ used as useEffect dependency</span>
+<span class="c">// ✅ very expensive computation (>1ms)</span>
+<span class="c">// ❌ primitive values (strings, numbers)</span>
+<span class="c">// ❌ component internal state derivation</span>
+<span class="c">// ❌ when not passing to children</span>
+
+<span class="c">// React.memo — skip re-render if props unchanged</span>
+<span class="k">const</span> <span class="cl">Row</span> = <span class="cl">React</span>.<span class="f">memo</span>(<span class="k">function</span> <span class="f">Row</span>({ <span class="v">item</span>, <span class="v">onSelect</span> }) {
+  <span class="k">return</span> <span class="k">&lt;tr</span> onClick={() => <span class="f">onSelect</span>(<span class="v">item</span>.id)}<span class="k">&gt;</span>...<span class="k">&lt;/tr&gt;</span>
+}, (<span class="v">prev</span>, <span class="v">next</span>) => <span class="v">prev</span>.item.id === <span class="v">next</span>.item.id)
+<span class="c">// custom areEqual comparator as 2nd arg</span></pre>
+  </div>
+</div>
+
+<div class="card a-purp">
+  <div class="ch"><div class="ci">🔁</div><span class="ct">useReducer — Complex State</span></div>
+  <div class="cb">
+    <pre><span class="k">type</span> <span class="t">State</span>  = { status: <span class="s">'idle'</span>|<span class="s">'loading'</span>|<span class="s">'error'</span>|<span class="s">'success'</span>, data: <span class="t">any</span>, error: <span class="t">any</span> }
+<span class="k">type</span> <span class="t">Action</span> = { type: <span class="s">'FETCH'</span> } | { type: <span class="s">'SUCCESS'</span>, data: <span class="t">any</span> } | { type: <span class="s">'ERROR'</span>, error: <span class="t">any</span> }
+
+<span class="k">function</span> <span class="f">reducer</span>(<span class="v">state</span>: <span class="t">State</span>, <span class="v">action</span>: <span class="t">Action</span>): <span class="t">State</span> {
+  <span class="k">switch</span> (<span class="v">action</span>.type) {
+    <span class="k">case</span> <span class="s">'FETCH'</span>:   <span class="k">return</span> { ...<span class="v">state</span>, status: <span class="s">'loading'</span> }
+    <span class="k">case</span> <span class="s">'SUCCESS'</span>: <span class="k">return</span> { status: <span class="s">'success'</span>, data: <span class="v">action</span>.data, error: <span class="n">null</span> }
+    <span class="k">case</span> <span class="s">'ERROR'</span>:   <span class="k">return</span> { status: <span class="s">'error'</span>, error: <span class="v">action</span>.error, data: <span class="n">null</span> }
+    <span class="k">default</span>: <span class="k">return</span> <span class="v">state</span>
+  }
+}
+
+<span class="k">const</span> [<span class="v">state</span>, <span class="v">dispatch</span>] = <span class="d">useReducer</span>(<span class="v">reducer</span>, {
+  status: <span class="s">'idle'</span>, data: <span class="n">null</span>, error: <span class="n">null</span>
+})
+
+<span class="c">// Lazy initializer (compute once)</span>
+<span class="k">const</span> [<span class="v">state</span>, <span class="v">dispatch</span>] = <span class="d">useReducer</span>(<span class="v">reducer</span>, <span class="v">props</span>, <span class="v">init</span>)
+
+<span class="c">// Dispatch actions</span>
+<span class="v">dispatch</span>({ type: <span class="s">'FETCH'</span> })
+<span class="v">dispatch</span>({ type: <span class="s">'SUCCESS'</span>, data: <span class="v">result</span> })
+<span class="v">dispatch</span>({ type: <span class="s">'ERROR'</span>, error: <span class="v">err</span>.message })</pre>
+  </div>
+</div>
+
+<div class="card a-pink">
+  <div class="ch"><div class="ci">🏗</div><span class="ct">Custom Hooks — Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// useLocalStorage</span>
+<span class="k">function</span> <span class="f">useLocalStorage</span>&lt;<span class="t">T</span>&gt;(<span class="v">key</span>: <span class="t">string</span>, <span class="v">initial</span>: <span class="t">T</span>) {
+  <span class="k">const</span> [<span class="v">value</span>, <span class="v">setValue</span>] = <span class="d">useState</span>&lt;<span class="t">T</span>&gt;(() => {
+    <span class="k">try</span> { <span class="k">return</span> <span class="cl">JSON</span>.<span class="f">parse</span>(localStorage.<span class="f">getItem</span>(<span class="v">key</span>) ?? <span class="s">''</span>) }
+    <span class="k">catch</span> { <span class="k">return</span> <span class="v">initial</span> }
+  })
+  <span class="k">const</span> <span class="v">set</span> = <span class="d">useCallback</span>((<span class="v">v</span>: <span class="t">T</span>) => {
+    <span class="f">setValue</span>(<span class="v">v</span>)
+    localStorage.<span class="f">setItem</span>(<span class="v">key</span>, <span class="cl">JSON</span>.<span class="f">stringify</span>(<span class="v">v</span>))
+  }, [<span class="v">key</span>])
+  <span class="k">return</span> [<span class="v">value</span>, <span class="v">set</span>] <span class="k">as const</span>
+}
+
+<span class="c">// useDebounce</span>
+<span class="k">function</span> <span class="f">useDebounce</span>&lt;<span class="t">T</span>&gt;(<span class="v">value</span>: <span class="t">T</span>, <span class="v">delay</span>: <span class="t">number</span>): <span class="t">T</span> {
+  <span class="k">const</span> [<span class="v">debounced</span>, <span class="v">setDebounced</span>] = <span class="d">useState</span>(<span class="v">value</span>)
+  <span class="d">useEffect</span>(() => {
+    <span class="k">const</span> <span class="v">id</span> = <span class="f">setTimeout</span>(() => <span class="f">setDebounced</span>(<span class="v">value</span>), <span class="v">delay</span>)
+    <span class="k">return</span> () => <span class="f">clearTimeout</span>(<span class="v">id</span>)
+  }, [<span class="v">value</span>, <span class="v">delay</span>])
+  <span class="k">return</span> <span class="v">debounced</span>
+}
+
+<span class="c">// useIntersectionObserver</span>
+<span class="k">function</span> <span class="f">useInView</span>(<span class="v">ref</span>: <span class="t">RefObject</span>&lt;<span class="t">Element</span>&gt;, <span class="v">options</span>?: <span class="t">IntersectionObserverInit</span>) {
+  <span class="k">const</span> [<span class="v">inView</span>, <span class="v">setInView</span>] = <span class="d">useState</span>(<span class="n">false</span>)
+  <span class="d">useEffect</span>(() => {
+    <span class="k">const</span> <span class="v">obs</span> = <span class="k">new</span> <span class="cl">IntersectionObserver</span>(([e]) => <span class="f">setInView</span>(<span class="v">e</span>.isIntersecting), <span class="v">options</span>)
+    <span class="k">if</span> (<span class="v">ref</span>.current) <span class="v">obs</span>.<span class="f">observe</span>(<span class="v">ref</span>.current)
+    <span class="k">return</span> () => <span class="v">obs</span>.<span class="f">disconnect</span>()
+  }, [])
+  <span class="k">return</span> <span class="v">inView</span>
+}</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     REACT 19
+════════════════════════════════════════════ -->
+<div id="react19" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(0,245,160,.1);color:var(--green);">🆕</div>
+  <div>
+    <div class="sh-title">React 19 — New Features<span class="tg tg-new">React 19</span></div>
+    <div class="sh-sub">Actions, useActionState, useOptimistic, use(), React Compiler, asset loading</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">🎬</div><span class="ct">Actions &amp; useActionState</span></div>
+  <div class="cb">
+    <div class="al al-new"><span class="al-i">✨</span>React 19 Actions handle async transitions, pending states, and errors natively — no more manual isPending state.</div>
+    <pre><span class="k">import</span> { useActionState } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="c">// Action — any async fn that receives (prevState, formData)</span>
+<span class="k">async function</span> <span class="f">updateName</span>(<span class="v">prevState</span>: <span class="t">any</span>, <span class="v">formData</span>: <span class="t">FormData</span>) {
+  <span class="k">const</span> <span class="v">name</span> = <span class="v">formData</span>.<span class="f">get</span>(<span class="s">'name'</span>) <span class="k">as</span> <span class="t">string</span>
+  <span class="k">if</span> (!<span class="v">name</span>) <span class="k">return</span> { error: <span class="s">'Name is required'</span> }
+  <span class="k">await</span> <span class="f">saveUser</span>({ name })
+  <span class="k">return</span> { success: <span class="n">true</span> }
+}
+
+<span class="k">function</span> <span class="f">NameForm</span>() {
+  <span class="k">const</span> [<span class="v">state</span>, <span class="v">action</span>, <span class="v">isPending</span>] = <span class="d">useActionState</span>(<span class="v">updateName</span>, <span class="n">null</span>)
+  <span class="k">return</span> (
+    <span class="k">&lt;form</span> action={<span class="v">action</span>}<span class="k">&gt;</span>
+      <span class="k">&lt;input</span> name=<span class="s">"name"</span> disabled={<span class="v">isPending</span>} <span class="k">/&gt;</span>
+      {<span class="v">state</span>?.error &amp;&amp; <span class="k">&lt;p&gt;</span>{<span class="v">state</span>.error}<span class="k">&lt;/p&gt;</span>}
+      <span class="k">&lt;button</span> disabled={<span class="v">isPending</span>}<span class="k">&gt;</span>
+        {<span class="v">isPending</span> ? <span class="s">'Saving...'</span> : <span class="s">'Save'</span>}
+      <span class="k">&lt;/button&gt;</span>
+    <span class="k">&lt;/form&gt;</span>
+  )
+}
+
+<span class="c">// useFormStatus — reads parent form's pending state</span>
+<span class="k">import</span> { useFormStatus } <span class="k">from</span> <span class="s">'react-dom'</span>
+<span class="k">function</span> <span class="f">Submit</span>() {
+  <span class="k">const</span> { pending } = <span class="d">useFormStatus</span>()
+  <span class="k">return</span> <span class="k">&lt;button</span> disabled={pending} type=<span class="s">"submit"</span><span class="k">&gt;</span>Submit<span class="k">&lt;/button&gt;</span>
+}</pre>
+  </div>
+</div>
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">useOptimistic, use() &amp; useTransition</span></div>
+  <div class="cb">
+    <pre><span class="c">// useOptimistic — instant UI feedback before server confirms</span>
+<span class="k">import</span> { useOptimistic } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="k">function</span> <span class="f">TodoList</span>({ <span class="v">todos</span> }) {
+  <span class="k">const</span> [<span class="v">optimisticTodos</span>, <span class="f">addOptimistic</span>] = <span class="d">useOptimistic</span>(
+    <span class="v">todos</span>,
+    (<span class="v">state</span>, <span class="v">newTodo</span>) => [...<span class="v">state</span>, { ...<span class="v">newTodo</span>, pending: <span class="n">true</span> }]
+  )
+  <span class="k">async function</span> <span class="f">add</span>(<span class="v">formData</span>: <span class="t">FormData</span>) {
+    <span class="k">const</span> <span class="v">todo</span> = { text: <span class="v">formData</span>.<span class="f">get</span>(<span class="s">'text'</span>), id: <span class="f">crypto</span>.<span class="f">randomUUID</span>() }
+    <span class="f">addOptimistic</span>(<span class="v">todo</span>)   <span class="c">// instant</span>
+    <span class="k">await</span> <span class="f">saveTodo</span>(<span class="v">todo</span>)  <span class="c">// then real</span>
+  }
+  <span class="k">return</span> (
+    <span class="k">&lt;ul&gt;</span>
+      {<span class="v">optimisticTodos</span>.<span class="f">map</span>(<span class="v">t</span> => (
+        <span class="k">&lt;li</span> key={<span class="v">t</span>.id} style={{ opacity: <span class="v">t</span>.pending ? <span class="n">0.5</span> : <span class="n">1</span> }}<span class="k">&gt;</span>{<span class="v">t</span>.text}<span class="k">&lt;/li&gt;</span>
+      ))}
+    <span class="k">&lt;/ul&gt;</span>
+  )
+}
+
+<span class="c">// use() — read context AND promises in render</span>
+<span class="k">import</span> { use } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="c">// Read context (can be conditional — unlike useContext)</span>
+<span class="k">const</span> <span class="v">theme</span> = <span class="f">use</span>(<span class="cl">ThemeContext</span>)
+
+<span class="c">// Unwrap promise (integrates with Suspense)</span>
+<span class="k">function</span> <span class="f">UserCard</span>({ <span class="v">userPromise</span> }) {
+  <span class="k">const</span> <span class="v">user</span> = <span class="f">use</span>(<span class="v">userPromise</span>)  <span class="c">// suspends until resolved</span>
+  <span class="k">return</span> <span class="k">&lt;p&gt;</span>{<span class="v">user</span>.name}<span class="k">&lt;/p&gt;</span>
+}
+
+<span class="c">// useTransition — mark non-urgent state updates</span>
+<span class="k">const</span> [<span class="v">isPending</span>, <span class="f">startTransition</span>] = <span class="d">useTransition</span>()
+<span class="f">startTransition</span>(() => <span class="f">setFilter</span>(<span class="v">newFilter</span>))  <span class="c">// won't block input</span>
+<span class="c">// React can interrupt this update for urgent ones (typing, clicking)</span></pre>
+  </div>
+</div>
+
+<div class="card a-teal">
+  <div class="ch"><div class="ci">🤖</div><span class="ct">React Compiler &amp; ref as Prop</span></div>
+  <div class="cb">
+    <div class="al al-new"><span class="al-i">✨</span>React Compiler automatically memoizes — no more manual useMemo/useCallback needed in most cases.</div>
+    <pre><span class="c">// React Compiler (Babel/Vite plugin)</span>
+<span class="c">// npm i babel-plugin-react-compiler</span>
+<span class="c">// Automatically inserts useMemo/useCallback where needed</span>
+
+<span class="c">// Before Compiler — manual</span>
+<span class="k">const</span> <span class="v">handler</span> = <span class="d">useCallback</span>(() => <span class="f">doThing</span>(<span class="v">id</span>), [<span class="v">id</span>])
+<span class="k">const</span> <span class="v">filtered</span> = <span class="d">useMemo</span>(() => <span class="v">items</span>.<span class="f">filter</span>(<span class="v">active</span>), [<span class="v">items</span>, <span class="v">active</span>])
+
+<span class="c">// With Compiler — write naturally, it handles it</span>
+<span class="k">const</span> <span class="v">handler</span> = () => <span class="f">doThing</span>(<span class="v">id</span>)
+<span class="k">const</span> <span class="v">filtered</span> = <span class="v">items</span>.<span class="f">filter</span>(<span class="v">active</span>)
+
+<span class="c">// ref as prop (React 19 — no more forwardRef needed!)</span>
+<span class="k">function</span> <span class="f">Input</span>({ <span class="v">ref</span>, ...props }) {  <span class="c">// ref is just a prop now</span>
+  <span class="k">return</span> <span class="k">&lt;input</span> ref={<span class="v">ref</span>} {...props} <span class="k">/&gt;</span>
+}
+<span class="c">// Usage: &lt;Input ref={myRef} /&gt;  — no forwardRef wrapper</span>
+
+<span class="c">// Document metadata in components (React 19)</span>
+<span class="k">function</span> <span class="f">BlogPost</span>({ post }) {
+  <span class="k">return</span> (
+    <span class="k">&lt;&gt;</span>
+      <span class="k">&lt;title&gt;</span>{post.title}<span class="k">&lt;/title&gt;</span>       <span class="c">{/* hoisted to &lt;head&gt; */}</span>
+      <span class="k">&lt;meta</span> name=<span class="s">"description"</span> content={post.summary} <span class="k">/&gt;</span>
+      <span class="k">&lt;link</span> rel=<span class="s">"stylesheet"</span> href={post.css} <span class="k">/&gt;</span>  <span class="c">{/* loads on demand */}</span>
+      <span class="k">&lt;p&gt;</span>{post.content}<span class="k">&lt;/p&gt;</span>
+    <span class="k">&lt;/&gt;</span>
+  )
+}</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     STATE MANAGEMENT
+════════════════════════════════════════════ -->
+<div id="state" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(255,159,67,.1);color:var(--ora);">🗃</div>
+  <div>
+    <div class="sh-title">State Management<span class="tg tg-adv">Advanced</span></div>
+    <div class="sh-sub">Zustand, Jotai, Redux Toolkit — when to use which</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-ora">
+  <div class="ch"><div class="ci">🐻</div><span class="ct">Zustand — Simple &amp; Scalable</span></div>
+  <div class="cb">
+    <pre><span class="k">import</span> { create } <span class="k">from</span> <span class="s">'zustand'</span>
+<span class="k">import</span> { immer } <span class="k">from</span> <span class="s">'zustand/middleware/immer'</span>
+<span class="k">import</span> { devtools, persist } <span class="k">from</span> <span class="s">'zustand/middleware'</span>
+
+<span class="k">interface</span> <span class="t">BearState</span> {
+  bears: <span class="t">number</span>
+  honey: <span class="t">number</span>
+  <span class="f">addBear</span>: () => <span class="t">void</span>
+  <span class="f">eatHoney</span>: (<span class="v">amount</span>: <span class="t">number</span>) => <span class="t">void</span>
+  <span class="f">reset</span>: () => <span class="t">void</span>
+}
+
+<span class="k">const</span> <span class="v">useBearStore</span> = <span class="f">create</span>&lt;<span class="t">BearState</span>&gt;()(
+  <span class="f">devtools</span>(<span class="f">persist</span>(<span class="f">immer</span>((<span class="v">set</span>) => ({
+    bears: <span class="n">0</span>, honey: <span class="n">100</span>,
+    <span class="f">addBear</span>:    () => <span class="f">set</span>((<span class="v">s</span>) => { <span class="v">s</span>.bears++ }),          <span class="c">// immer = mutate directly</span>
+    <span class="f">eatHoney</span>:  (<span class="v">n</span>) => <span class="f">set</span>((<span class="v">s</span>) => { <span class="v">s</span>.honey -= <span class="v">n</span> }),
+    <span class="f">reset</span>:     () => <span class="f">set</span>({ bears: <span class="n">0</span>, honey: <span class="n">100</span> }),
+  })), { name: <span class="s">'bear-store'</span> }))
+)
+
+<span class="c">// Selective subscription — only re-render on bears change</span>
+<span class="k">const</span> <span class="v">bears</span>   = <span class="f">useBearStore</span>((<span class="v">s</span>) => <span class="v">s</span>.bears)
+<span class="k">const</span> <span class="v">addBear</span> = <span class="f">useBearStore</span>((<span class="v">s</span>) => <span class="v">s</span>.addBear)
+
+<span class="c">// Get state outside React (e.g. in event listeners)</span>
+<span class="v">useBearStore</span>.<span class="f">getState</span>().bears
+<span class="v">useBearStore</span>.<span class="f">setState</span>({ bears: <span class="n">10</span> })
+<span class="v">useBearStore</span>.<span class="f">subscribe</span>((<span class="v">state</span>) => <span class="f">console</span>.<span class="f">log</span>(<span class="v">state</span>.bears))</pre>
+  </div>
+</div>
+
+<div class="card a-ora">
+  <div class="ch"><div class="ci">⚛</div><span class="ct">Jotai — Atomic State</span></div>
+  <div class="cb">
+    <pre><span class="k">import</span> { atom, useAtom, useAtomValue, useSetAtom } <span class="k">from</span> <span class="s">'jotai'</span>
+<span class="k">import</span> { atomWithStorage, loadable } <span class="k">from</span> <span class="s">'jotai/utils'</span>
+
+<span class="c">// Primitive atoms</span>
+<span class="k">const</span> <span class="v">countAtom</span>  = <span class="f">atom</span>(<span class="n">0</span>)
+<span class="k">const</span> <span class="v">nameAtom</span>   = <span class="f">atom</span>(<span class="s">'Alice'</span>)
+<span class="k">const</span> <span class="v">themeAtom</span>  = <span class="f">atomWithStorage</span>(<span class="s">'theme'</span>, <span class="s">'dark'</span>)
+
+<span class="c">// Derived atoms (read-only)</span>
+<span class="k">const</span> <span class="v">doubledAtom</span> = <span class="f">atom</span>((<span class="v">get</span>) => <span class="v">get</span>(<span class="v">countAtom</span>) * <span class="n">2</span>)
+
+<span class="c">// Async atom</span>
+<span class="k">const</span> <span class="v">userAtom</span> = <span class="f">atom</span>(<span class="k">async</span> () => {
+  <span class="k">const</span> <span class="v">res</span> = <span class="k">await</span> <span class="f">fetch</span>(<span class="s">'/api/user'</span>)
+  <span class="k">return</span> <span class="v">res</span>.<span class="f">json</span>()
+})
+
+<span class="c">// Write atom (action)</span>
+<span class="k">const</span> <span class="v">incrementAtom</span> = <span class="f">atom</span>(<span class="n">null</span>, (<span class="v">get</span>, <span class="v">set</span>) => {
+  <span class="f">set</span>(<span class="v">countAtom</span>, <span class="v">get</span>(<span class="v">countAtom</span>) + <span class="n">1</span>)
+})
+
+<span class="c">// Usage</span>
+<span class="k">const</span> [<span class="v">count</span>, <span class="v">setCount</span>] = <span class="d">useAtom</span>(<span class="v">countAtom</span>)
+<span class="k">const</span> <span class="v">doubled</span>          = <span class="d">useAtomValue</span>(<span class="v">doubledAtom</span>)   <span class="c">// read-only</span>
+<span class="k">const</span> <span class="v">increment</span>        = <span class="d">useSetAtom</span>(<span class="v">incrementAtom</span>)   <span class="c">// write-only</span></pre>
+  </div>
+</div>
+
+<div class="card a-red">
+  <div class="ch"><div class="ci">🏪</div><span class="ct">Redux Toolkit (RTK) — Enterprise Scale</span></div>
+  <div class="cb">
+    <pre><span class="k">import</span> { createSlice, createAsyncThunk, configureStore } <span class="k">from</span> <span class="s">'@reduxjs/toolkit'</span>
+
+<span class="c">// Async thunk</span>
+<span class="k">export const</span> <span class="v">fetchPosts</span> = <span class="f">createAsyncThunk</span>(<span class="s">'posts/fetch'</span>, <span class="k">async</span> (<span class="v">userId</span>) => {
+  <span class="k">const</span> <span class="v">res</span> = <span class="k">await</span> <span class="f">fetch</span>(<span class="s">`/api/posts?userId=${userId}`</span>)
+  <span class="k">return</span> <span class="v">res</span>.<span class="f">json</span>()
+})
+
+<span class="c">// Slice — immer-powered reducers</span>
+<span class="k">const</span> <span class="v">postsSlice</span> = <span class="f">createSlice</span>({
+  name: <span class="s">'posts'</span>,
+  initialState: { items: [], status: <span class="s">'idle'</span> <span class="k">as const</span> },
+  reducers: {
+    <span class="f">addPost</span>: (<span class="v">state</span>, action) => { <span class="v">state</span>.items.<span class="f">push</span>(action.payload) },
+    <span class="f">removePost</span>: (<span class="v">state</span>, { payload: id }) => {
+      <span class="v">state</span>.items = <span class="v">state</span>.items.<span class="f">filter</span>(<span class="v">p</span> => <span class="v">p</span>.id !== id)
+    },
+  },
+  extraReducers: (<span class="v">b</span>) => {
+    <span class="v">b</span>.<span class="f">addCase</span>(<span class="v">fetchPosts</span>.pending,   (<span class="v">s</span>) => { <span class="v">s</span>.status = <span class="s">'loading'</span> })
+     .<span class="f">addCase</span>(<span class="v">fetchPosts</span>.fulfilled, (<span class="v">s</span>, { payload }) => {
+       <span class="v">s</span>.status = <span class="s">'idle'</span>; <span class="v">s</span>.items = payload
+     })
+  },
+})
+<span class="k">export const</span> { addPost, removePost } = <span class="v">postsSlice</span>.actions</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PERFORMANCE
+════════════════════════════════════════════ -->
+<div id="perf" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(0,229,255,.1);color:var(--cyan);">🚀</div>
+  <div>
+    <div class="sh-title">Performance Optimization<span class="tg tg-perf">Perf</span></div>
+    <div class="sh-sub">Code splitting, virtualization, Web Workers, profiling, Core Web Vitals</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-cyan">
+  <div class="ch"><div class="ci">✂</div><span class="ct">Code Splitting &amp; Lazy Loading</span></div>
+  <div class="cb">
+    <pre><span class="k">import</span> { lazy, <span class="cl">Suspense</span> } <span class="k">from</span> <span class="s">'react'</span>
+
+<span class="c">// Route-based splitting</span>
+<span class="k">const</span> <span class="cl">Dashboard</span> = <span class="f">lazy</span>(() => <span class="k">import</span>(<span class="s">'./pages/Dashboard'</span>))
+<span class="k">const</span> <span class="cl">Settings</span>  = <span class="f">lazy</span>(() => <span class="k">import</span>(<span class="s">'./pages/Settings'</span>))
+
+<span class="k">function</span> <span class="f">App</span>() {
+  <span class="k">return</span> (
+    <span class="k">&lt;</span><span class="cl">Suspense</span> fallback={<span class="k">&lt;</span><span class="cl">PageSkeleton</span> <span class="k">/&gt;</span>}<span class="k">&gt;</span>
+      <span class="k">&lt;</span><span class="cl">Routes</span><span class="k">&gt;</span>
+        <span class="k">&lt;</span><span class="cl">Route</span> path=<span class="s">"/dashboard"</span> element={<span class="k">&lt;</span><span class="cl">Dashboard</span> <span class="k">/&gt;</span>} <span class="k">/&gt;</span>
+        <span class="k">&lt;</span><span class="cl">Route</span> path=<span class="s">"/settings"</span>  element={<span class="k">&lt;</span><span class="cl">Settings</span>  <span class="k">/&gt;</span>} <span class="k">/&gt;</span>
+      <span class="k">&lt;/</span><span class="cl">Routes</span><span class="k">&gt;</span>
+    <span class="k">&lt;/</span><span class="cl">Suspense</span><span class="k">&gt;</span>
+  )
+}
+
+<span class="c">// Component-level split (conditional render)</span>
+<span class="k">const</span> <span class="cl">HeavyModal</span> = <span class="f">lazy</span>(() => <span class="k">import</span>(<span class="s">'./HeavyModal'</span>))
+{<span class="v">isOpen</span> &amp;&amp; <span class="k">&lt;</span><span class="cl">Suspense</span> fallback={<span class="n">null</span>}<span class="k">&gt;&lt;</span><span class="cl">HeavyModal</span> <span class="k">/&gt;&lt;/</span><span class="cl">Suspense</span><span class="k">&gt;</span>}
+
+<span class="c">// Preload on hover</span>
+<span class="k">const</span> <span class="v">preload</span> = () => <span class="k">import</span>(<span class="s">'./HeavyPage'</span>)
+<span class="k">&lt;a</span> onMouseEnter={<span class="v">preload</span>} href=<span class="s">"/heavy"</span><span class="k">&gt;</span>Go<span class="k">&lt;/a&gt;</span>
+
+<span class="c">// Dynamic import with named export</span>
+<span class="k">const</span> { utils } = <span class="k">await import</span>(<span class="s">'./utils'</span>)
+<span class="c">// Vite magic comments:</span>
+<span class="k">import</span>(<span class="c">/* webpackChunkName: "charts" */</span> <span class="s">'./Charts'</span>)
+<span class="k">import</span>(<span class="c">/* webpackPrefetch: true */</span>      <span class="s">'./NextPage'</span>)</pre>
+  </div>
+</div>
+
+<div class="card a-cyan">
+  <div class="ch"><div class="ci">📋</div><span class="ct">Virtualization — Large Lists</span></div>
+  <div class="cb">
+    <div class="al al-good"><span class="al-i">✅</span>Render only visible rows. 10,000-item list renders in &lt;1ms with virtualization.</div>
+    <pre><span class="c">// TanStack Virtual (headless)</span>
+<span class="k">import</span> { useVirtualizer } <span class="k">from</span> <span class="s">'@tanstack/react-virtual'</span>
+
+<span class="k">function</span> <span class="f">VirtualList</span>({ <span class="v">items</span> }) {
+  <span class="k">const</span> <span class="v">parentRef</span> = <span class="d">useRef</span>(<span class="n">null</span>)
+  <span class="k">const</span> <span class="v">virt</span> = <span class="f">useVirtualizer</span>({
+    count: <span class="v">items</span>.length,
+    <span class="f">getScrollElement</span>: () => <span class="v">parentRef</span>.current,
+    <span class="f">estimateSize</span>:     () => <span class="n">50</span>,   <span class="c">// row height</span>
+    overscan: <span class="n">5</span>,                  <span class="c">// extra rows outside viewport</span>
+  })
+
+  <span class="k">return</span> (
+    <span class="k">&lt;div</span> ref={<span class="v">parentRef</span>} style={{ overflow: <span class="s">'auto'</span>, height: <span class="s">'500px'</span> }}<span class="k">&gt;</span>
+      <span class="k">&lt;div</span> style={{ height: <span class="v">virt</span>.getTotalSize() }}<span class="k">&gt;</span>
+        {<span class="v">virt</span>.<span class="f">getVirtualItems</span>().<span class="f">map</span>((<span class="v">row</span>) => (
+          <span class="k">&lt;div</span>
+            key={<span class="v">row</span>.index}
+            style={{ transform: <span class="s">`translateY(${row.start}px)`</span>, position: <span class="s">'absolute'</span>, width: <span class="s">'100%'</span> }}
+          <span class="k">&gt;</span>
+            {<span class="v">items</span>[<span class="v">row</span>.index].name}
+          <span class="k">&lt;/div&gt;</span>
+        ))}
+      <span class="k">&lt;/div&gt;</span>
+    <span class="k">&lt;/div&gt;</span>
+  )
+}</pre>
+  </div>
+</div>
+
+<div class="card a-blue">
+  <div class="ch"><div class="ci">🔧</div><span class="ct">Web Workers &amp; Offloading CPU</span></div>
+  <div class="cb">
+    <pre><span class="c">// worker.ts — runs in separate thread</span>
+<span class="f">self</span>.<span class="f">onmessage</span> = ({ data: { items } }) => {
+  <span class="k">const</span> <span class="v">result</span> = <span class="v">items</span>.<span class="f">sort</span>((<span class="v">a</span>, <span class="v">b</span>) => <span class="v">a</span> - <span class="v">b</span>)  <span class="c">// heavy work</span>
+  <span class="f">self</span>.<span class="f">postMessage</span>(<span class="v">result</span>)
+}
+
+<span class="c">// useWorker custom hook</span>
+<span class="k">function</span> <span class="f">useWorker</span>(<span class="v">workerUrl</span>: <span class="t">string</span>) {
+  <span class="k">const</span> <span class="v">workerRef</span> = <span class="d">useRef</span>&lt;<span class="t">Worker</span>&gt;()
+  <span class="d">useEffect</span>(() => {
+    <span class="v">workerRef</span>.current = <span class="k">new</span> <span class="cl">Worker</span>(<span class="k">new</span> <span class="cl">URL</span>(<span class="v">workerUrl</span>, <span class="k">import</span>.meta.url), { type: <span class="s">'module'</span> })
+    <span class="k">return</span> () => <span class="v">workerRef</span>.current?.<span class="f">terminate</span>()
+  }, [])
+  <span class="k">return</span> <span class="d">useCallback</span>((<span class="v">data</span>) => {
+    <span class="k">return new</span> <span class="cl">Promise</span>((<span class="v">res</span>) => {
+      <span class="v">workerRef</span>.current!.<span class="f">postMessage</span>(<span class="v">data</span>)
+      <span class="v">workerRef</span>.current!.<span class="f">onmessage</span> = ({ data }) => <span class="f">res</span>(data)
+    })
+  }, [])
+}
+
+<span class="c">// Comlink — use workers like regular async functions</span>
+<span class="k">import</span> * <span class="k">as</span> <span class="v">Comlink</span> <span class="k">from</span> <span class="s">'comlink'</span>
+<span class="k">const</span> <span class="v">worker</span> = <span class="v">Comlink</span>.<span class="f">wrap</span>(<span class="k">new</span> <span class="cl">Worker</span>(<span class="s">'./worker.ts'</span>))
+<span class="k">const</span> <span class="v">result</span> = <span class="k">await</span> <span class="v">worker</span>.<span class="f">heavyComputation</span>(<span class="v">data</span>)</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PATTERNS
+════════════════════════════════════════════ -->
+<div id="patterns" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(255,121,198,.1);color:var(--pink);">🏛</div>
+  <div>
+    <div class="sh-title">React Patterns — Advanced<span class="tg tg-adv">Advanced</span></div>
+    <div class="sh-sub">Compound components, HOC, render props, headless, error boundaries</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-pink">
+  <div class="ch"><div class="ci">🔩</div><span class="ct">Compound Components</span></div>
+  <div class="cb">
+    <div class="al al-info"><span class="al-i">💡</span>Compound components share implicit state via Context — flexible API without prop drilling.</div>
+    <pre><span class="k">const</span> <span class="cl">TabCtx</span> = <span class="cl">React</span>.<span class="f">createContext</span>&lt;{ active: <span class="t">string</span>; <span class="f">setActive</span>: (<span class="v">s</span>: <span class="t">string</span>) => <span class="t">void</span> }&gt;(<span class="n">null</span>!)
+
+<span class="k">function</span> <span class="f">Tabs</span>({ children, defaultTab }) {
+  <span class="k">const</span> [<span class="v">active</span>, <span class="v">setActive</span>] = <span class="d">useState</span>(<span class="v">defaultTab</span>)
+  <span class="k">return</span> <span class="k">&lt;</span><span class="cl">TabCtx.Provider</span> value={{ active, setActive }}>{children}<span class="k">&lt;/</span><span class="cl">TabCtx.Provider</span><span class="k">&gt;</span>
+}
+
+<span class="cl">Tabs</span>.Tab = <span class="k">function</span> <span class="f">Tab</span>({ id, children }) {
+  <span class="k">const</span> { active, setActive } = <span class="f">use</span>(<span class="cl">TabCtx</span>)
+  <span class="k">return</span> <span class="k">&lt;button</span> onClick={() => <span class="f">setActive</span>(id)} data-active={active === id}>{children}<span class="k">&lt;/button&gt;</span>
+}
+
+<span class="cl">Tabs</span>.Panel = <span class="k">function</span> <span class="f">Panel</span>({ id, children }) {
+  <span class="k">const</span> { active } = <span class="f">use</span>(<span class="cl">TabCtx</span>)
+  <span class="k">return</span> active === id ? <span class="k">&lt;div&gt;</span>{children}<span class="k">&lt;/div&gt;</span> : <span class="n">null</span>
+}
+
+<span class="c">// Usage — fully composable, no awkward config props</span>
+<span class="k">&lt;</span><span class="cl">Tabs</span> defaultTab=<span class="s">"home"</span><span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="cl">Tabs.Tab</span> id=<span class="s">"home"</span><span class="k">&gt;</span>Home<span class="k">&lt;/</span><span class="cl">Tabs.Tab</span><span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="cl">Tabs.Tab</span> id=<span class="s">"settings"</span><span class="k">&gt;</span>Settings<span class="k">&lt;/</span><span class="cl">Tabs.Tab</span><span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="cl">Tabs.Panel</span> id=<span class="s">"home"</span><span class="k">&gt;&lt;</span><span class="cl">HomePage</span> <span class="k">/&gt;&lt;/</span><span class="cl">Tabs.Panel</span><span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="cl">Tabs.Panel</span> id=<span class="s">"settings"</span><span class="k">&gt;&lt;</span><span class="cl">SettingsPage</span> <span class="k">/&gt;&lt;/</span><span class="cl">Tabs.Panel</span><span class="k">&gt;</span>
+<span class="k">&lt;/</span><span class="cl">Tabs</span><span class="k">&gt;</span></pre>
+  </div>
+</div>
+
+<div class="card a-pink">
+  <div class="ch"><div class="ci">🔮</div><span class="ct">HOCs, Error Boundaries &amp; Suspense</span></div>
+  <div class="cb">
+    <pre><span class="c">// HOC — wraps component with behaviour</span>
+<span class="k">function</span> <span class="f">withAuth</span>&lt;<span class="t">P</span>&gt;(<span class="cl">Component</span>: <span class="t">ComponentType</span>&lt;<span class="t">P</span>&gt;) {
+  <span class="k">return function</span> <span class="f">AuthWrapper</span>(<span class="v">props</span>: <span class="t">P</span>) {
+    <span class="k">const</span> { user } = <span class="f">useAuth</span>()
+    <span class="k">if</span> (!<span class="v">user</span>) <span class="k">return</span> <span class="k">&lt;</span><span class="cl">Redirect</span> to=<span class="s">"/login"</span> <span class="k">/&gt;</span>
+    <span class="k">return</span> <span class="k">&lt;</span><span class="cl">Component</span> {...<span class="v">props</span>} <span class="k">/&gt;</span>
+  }
+}
+<span class="k">export default</span> <span class="f">withAuth</span>(<span class="cl">Dashboard</span>)
+
+<span class="c">// Error Boundary (class — no hook equivalent yet)</span>
+<span class="k">class</span> <span class="cl">ErrorBoundary</span> <span class="k">extends</span> <span class="cl">React.Component</span> {
+  <span class="v">state</span> = { error: <span class="n">null</span> }
+  <span class="k">static</span> <span class="f">getDerivedStateFromError</span>(<span class="v">err</span>) { <span class="k">return</span> { error: <span class="v">err</span> } }
+  <span class="f">componentDidCatch</span>(<span class="v">err</span>, <span class="v">info</span>) { <span class="f">logError</span>(<span class="v">err</span>, <span class="v">info</span>.<span class="v">componentStack</span>) }
+  <span class="f">render</span>() {
+    <span class="k">return</span> <span class="k">this</span>.state.error
+      ? <span class="k">&lt;</span><span class="cl">ErrorFallback</span> error={<span class="k">this</span>.state.error} <span class="f">reset</span>={() => <span class="k">this</span>.<span class="f">setState</span>({ error: <span class="n">null</span> })} <span class="k">/&gt;</span>
+      : <span class="k">this</span>.props.children
+  }
+}
+
+<span class="c">// react-error-boundary — modern library alternative</span>
+<span class="k">import</span> { <span class="cl">ErrorBoundary</span> } <span class="k">from</span> <span class="s">'react-error-boundary'</span>
+<span class="k">&lt;</span><span class="cl">ErrorBoundary</span>
+  <span class="cl">FallbackComponent</span>={<span class="cl">ErrorFallback</span>}
+  <span class="f">onError</span>={<span class="f">logError</span>}
+  <span class="f">onReset</span>={<span class="f">resetStore</span>}
+<span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="cl">Suspense</span> fallback={<span class="k">&lt;</span><span class="cl">Spinner</span> <span class="k">/&gt;</span>}<span class="k">&gt;</span>
+    <span class="k">&lt;</span><span class="cl">AsyncComponent</span> <span class="k">/&gt;</span>
+  <span class="k">&lt;/</span><span class="cl">Suspense</span><span class="k">&gt;</span>
+<span class="k">&lt;/</span><span class="cl">ErrorBoundary</span><span class="k">&gt;</span></pre>
+  </div>
+</div>
+
+<div class="card a-purp">
+  <div class="ch"><div class="ci">🎯</div><span class="ct">Headless UI Pattern</span></div>
+  <div class="cb">
+    <div class="al al-info"><span class="al-i">💡</span>Headless = all behaviour/state, no UI. Consumer provides the rendering. Maximum flexibility.</div>
+    <pre><span class="c">// Headless useCombobox hook</span>
+<span class="k">function</span> <span class="f">useCombobox</span>&lt;<span class="t">T</span>&gt;({ items, <span class="f">getLabel</span> }: { items: <span class="t">T</span>[], <span class="f">getLabel</span>: (<span class="v">i</span>: <span class="t">T</span>) => <span class="t">string</span> }) {
+  <span class="k">const</span> [<span class="v">query</span>,    <span class="v">setQuery</span>]    = <span class="d">useState</span>(<span class="s">''</span>)
+  <span class="k">const</span> [<span class="v">selected</span>, <span class="v">setSelected</span>] = <span class="d">useState</span>&lt;<span class="t">T</span> | <span class="n">null</span>&gt;(<span class="n">null</span>)
+  <span class="k">const</span> [<span class="v">isOpen</span>,   <span class="v">setIsOpen</span>]   = <span class="d">useState</span>(<span class="n">false</span>)
+
+  <span class="k">const</span> <span class="v">filtered</span> = <span class="d">useMemo</span>(() =>
+    <span class="v">items</span>.<span class="f">filter</span>(<span class="v">i</span> => <span class="f">getLabel</span>(<span class="v">i</span>).<span class="f">toLowerCase</span>().<span class="f">includes</span>(<span class="v">query</span>.<span class="f">toLowerCase</span>())),
+    [<span class="v">items</span>, <span class="v">query</span>]
+  )
+
+  <span class="k">return</span> {
+    <span class="c">// Prop getters — spread onto elements</span>
+    <span class="f">getInputProps</span>: () => ({
+      value: <span class="v">query</span>,
+      <span class="f">onChange</span>: (<span class="v">e</span>) => { <span class="f">setQuery</span>(<span class="v">e</span>.target.value); <span class="f">setIsOpen</span>(<span class="n">true</span>) },
+      <span class="f">onFocus</span>: () => <span class="f">setIsOpen</span>(<span class="n">true</span>),
+    }),
+    <span class="f">getItemProps</span>: (<span class="v">item</span>: <span class="t">T</span>) => ({
+      onClick: () => { <span class="f">setSelected</span>(<span class="v">item</span>); <span class="f">setQuery</span>(<span class="f">getLabel</span>(<span class="v">item</span>)); <span class="f">setIsOpen</span>(<span class="n">false</span>) },
+    }),
+    <span class="v">filtered</span>, <span class="v">selected</span>, <span class="v">isOpen</span>,
+  }
+}
+
+<span class="c">// Usage — consumer owns ALL styling</span>
+<span class="k">const</span> { getInputProps, getItemProps, filtered, isOpen } = <span class="f">useCombobox</span>({ items, getLabel })
+<span class="k">&lt;input</span> {...<span class="f">getInputProps</span>()} className=<span class="s">"my-input"</span> <span class="k">/&gt;</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TESTING
+════════════════════════════════════════════ -->
+<div id="testing" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(0,245,160,.1);color:var(--green);">🧪</div>
+  <div>
+    <div class="sh-title">Testing — Vitest &amp; React Testing Library</div>
+    <div class="sh-sub">Unit, integration, accessibility, mocking, Playwright E2E</div>
+  </div>
+</div>
+<div class="grid">
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">Vitest + RTL Setup &amp; Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c"># vitest.config.ts</span>
+<span class="k">export default</span> <span class="f">defineConfig</span>({ test: {
+  environment: <span class="s">'jsdom'</span>,
+  setupFiles: [<span class="s">'./src/test/setup.ts'</span>],
+  globals: <span class="n">true</span>,
+}})
+
+<span class="c">// test/setup.ts</span>
+<span class="k">import</span> <span class="s">'@testing-library/jest-dom'</span>
+
+<span class="c">// Component test</span>
+<span class="k">import</span> { render, screen, userEvent } <span class="k">from</span> <span class="s">'@testing-library/react'</span>
+
+<span class="f">describe</span>(<span class="s">'Counter'</span>, () => {
+  <span class="f">it</span>(<span class="s">'increments on click'</span>, <span class="k">async</span> () => {
+    <span class="k">const</span> <span class="v">user</span> = <span class="v">userEvent</span>.<span class="f">setup</span>()
+    <span class="f">render</span>(<span class="k">&lt;</span><span class="cl">Counter</span> initial={<span class="n">0</span>} <span class="k">/&gt;</span>)
+
+    <span class="k">await</span> <span class="v">user</span>.<span class="f">click</span>(<span class="v">screen</span>.<span class="f">getByRole</span>(<span class="s">'button'</span>, { name: /increment/i }))
+
+    <span class="f">expect</span>(<span class="v">screen</span>.<span class="f">getByText</span>(<span class="s">'1'</span>)).<span class="f">toBeInTheDocument</span>()
+  })
+})
+
+<span class="c">// Query priority (most to least accessible)</span>
+<span class="c">// getByRole > getByLabelText > getByPlaceholderText</span>
+<span class="c">// > getByText > getByDisplayValue > getByAltText</span>
+<span class="c">// > getByTitle > getByTestId (last resort)</span>
+
+<span class="c">// Async queries</span>
+<span class="k">await</span> <span class="v">screen</span>.<span class="f">findByText</span>(<span class="s">'Loaded!'</span>)  <span class="c">// waits up to 1000ms</span>
+<span class="f">waitFor</span>(() => <span class="f">expect</span>(<span class="v">fn</span>).<span class="f">toHaveBeenCalled</span>())</pre>
+  </div>
+</div>
+
+<div class="card a-green">
+  <div class="ch"><div class="ci">🎭</div><span class="ct">Mocking &amp; msw</span></div>
+  <div class="cb">
+    <pre><span class="c">// Mock API with msw (Mock Service Worker)</span>
+<span class="k">import</span> { http, <span class="cl">HttpResponse</span> } <span class="k">from</span> <span class="s">'msw'</span>
+<span class="k">import</span> { setupServer } <span class="k">from</span> <span class="s">'msw/node'</span>
+
+<span class="k">const</span> <span class="v">server</span> = <span class="f">setupServer</span>(
+  http.<span class="f">get</span>(<span class="s">'/api/users'</span>, () => {
+    <span class="k">return</span> <span class="cl">HttpResponse</span>.<span class="f">json</span>([{ id: <span class="n">1</span>, name: <span class="s">'Alice'</span> }])
+  }),
+  http.<span class="f">post</span>(<span class="s">'/api/users'</span>, <span class="k">async</span> ({ request }) => {
+    <span class="k">const</span> <span class="v">body</span> = <span class="k">await</span> request.<span class="f">json</span>()
+    <span class="k">return</span> <span class="cl">HttpResponse</span>.<span class="f">json</span>({ ...<span class="v">body</span>, id: <span class="n">2</span> }, { status: <span class="n">201</span> })
+  }),
+)
+<span class="f">beforeAll</span>(() => <span class="v">server</span>.<span class="f">listen</span>())
+<span class="f">afterEach</span>(() => <span class="v">server</span>.<span class="f">resetHandlers</span>())
+<span class="f">afterAll</span>(() => <span class="v">server</span>.<span class="f">close</span>())
+
+<span class="c">// Override per test</span>
+<span class="v">server</span>.<span class="f">use</span>(http.<span class="f">get</span>(<span class="s">'/api/users'</span>, () => <span class="cl">HttpResponse</span>.<span class="f">json</span>([], { status: <span class="n">200</span> })))
+
+<span class="c">// Vitest module mock</span>
+<span class="f">vi</span>.<span class="f">mock</span>(<span class="s">'./analytics'</span>, () => ({ <span class="f">track</span>: <span class="f">vi</span>.<span class="f">fn</span>() }))
+<span class="k">const</span> { track } = <span class="k">await import</span>(<span class="s">'./analytics'</span>)
+<span class="f">expect</span>(<span class="v">track</span>).<span class="f">toHaveBeenCalledWith</span>(<span class="s">'page_view'</span>)
+
+<span class="c">// Spy on module export</span>
+<span class="k">import</span> * <span class="k">as</span> api <span class="k">from</span> <span class="s">'./api'</span>
+<span class="f">vi</span>.<span class="f">spyOn</span>(<span class="v">api</span>, <span class="s">'fetchUser'</span>).<span class="f">mockResolvedValueOnce</span>({ name: <span class="s">'Bob'</span> })</pre>
+  </div>
+</div>
+
+<div class="card a-teal">
+  <div class="ch"><div class="ci">🌐</div><span class="ct">Playwright — E2E Testing</span></div>
+  <div class="cb">
+    <pre><span class="c"># playwright.config.ts</span>
+<span class="k">export default</span> <span class="f">defineConfig</span>({
+  testDir: <span class="s">'./e2e'</span>,
+  use: {
+    baseURL: <span class="s">'http://localhost:3000'</span>,
+    trace: <span class="s">'on-first-retry'</span>,
+    screenshot: <span class="s">'only-on-failure'</span>,
+  },
+})
+
+<span class="c">// e2e/auth.spec.ts</span>
+<span class="k">import</span> { test, expect } <span class="k">from</span> <span class="s">'@playwright/test'</span>
+
+<span class="f">test</span>(<span class="s">'user can login'</span>, <span class="k">async</span> ({ page }) => {
+  <span class="k">await</span> page.<span class="f">goto</span>(<span class="s">'/login'</span>)
+  <span class="k">await</span> page.<span class="f">getByLabel</span>(<span class="s">'Email'</span>).<span class="f">fill</span>(<span class="s">'test@example.com'</span>)
+  <span class="k">await</span> page.<span class="f">getByLabel</span>(<span class="s">'Password'</span>).<span class="f">fill</span>(<span class="s">'password'</span>)
+  <span class="k">await</span> page.<span class="f">getByRole</span>(<span class="s">'button'</span>, { name: /sign in/i }).<span class="f">click</span>()
+  <span class="k">await</span> <span class="f">expect</span>(page).<span class="f">toHaveURL</span>(<span class="s">'/dashboard'</span>)
+  <span class="k">await</span> <span class="f">expect</span>(page.<span class="f">getByText</span>(<span class="s">'Welcome back'</span>)).<span class="f">toBeVisible</span>()
+})
+
+<span class="c">// Page Object Model</span>
+<span class="k">class</span> <span class="cl">LoginPage</span> {
+  <span class="f">constructor</span>(<span class="k">private</span> <span class="v">page</span>: <span class="t">Page</span>) {}
+  <span class="k">async</span> <span class="f">login</span>(<span class="v">email</span>: <span class="t">string</span>, <span class="v">pw</span>: <span class="t">string</span>) {
+    <span class="k">await</span> <span class="k">this</span>.<span class="v">page</span>.<span class="f">goto</span>(<span class="s">'/login'</span>)
+    <span class="k">await</span> <span class="k">this</span>.<span class="v">page</span>.<span class="f">getByLabel</span>(<span class="s">'Email'</span>).<span class="f">fill</span>(<span class="v">email</span>)
+    <span class="k">await</span> <span class="k">this</span>.<span class="v">page</span>.<span class="f">getByLabel</span>(<span class="s">'Password'</span>).<span class="f">fill</span>(<span class="v">pw</span>)
+    <span class="k">await</span> <span class="k">this</span>.<span class="v">page</span>.<span class="f">getByRole</span>(<span class="s">'button'</span>).<span class="f">click</span>()
+  }
+}</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TOOLING
+════════════════════════════════════════════ -->
+<div id="tooling" class="sec">
+<div class="sh">
+  <div class="sh-ico" style="background:rgba(255,159,67,.1);color:var(--ora);">🔧</div>
+  <div>
+    <div class="sh-title">Tooling — Vite, TypeScript, ESLint</div>
+    <div class="sh-sub">Build tools, TypeScript deep dive, linting, formatting, monorepos</div>
+  </div>
+</div>
+<div class="grid g3">
+
+<div class="card a-ora">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">Vite Config — Advanced</span></div>
+  <div class="cb">
+    <pre><span class="k">import</span> { defineConfig, splitVendorChunkPlugin } <span class="k">from</span> <span class="s">'vite'</span>
+<span class="k">import</span> react <span class="k">from</span> <span class="s">'@vitejs/plugin-react'</span>
+
+<span class="k">export default</span> <span class="f">defineConfig</span>(({ mode }) => ({
+  plugins: [
+    <span class="f">react</span>({ babel: { plugins: [<span class="s">'babel-plugin-react-compiler'</span>] } }),
+    <span class="f">splitVendorChunkPlugin</span>(),  <span class="c">// vendor chunk splitting</span>
+  ],
+  resolve: {
+    alias: { <span class="s">'@'</span>: <span class="s">'/src'</span> }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react:  [<span class="s">'react'</span>, <span class="s">'react-dom'</span>],
+          router: [<span class="s">'react-router-dom'</span>],
+          charts: [<span class="s">'recharts'</span>, <span class="s">'d3'</span>],
+        }
+      }
+    },
+    sourcemap: mode === <span class="s">'staging'</span>,
+  },
+  server: {
+    proxy: {
+      <span class="s">'/api'</span>: { target: <span class="s">'http://localhost:8000'</span>, changeOrigin: <span class="n">true</span> }
+    }
+  },
+}))</pre>
+  </div>
+</div>
+
+<div class="card a-blue">
+  <div class="ch"><div class="ci">📘</div><span class="ct">TypeScript — React Patterns</span></div>
+  <div class="cb">
+    <pre><span class="c">// Component props</span>
+<span class="k">interface</span> <span class="t">ButtonProps</span> <span class="k">extends</span> <span class="t">React.ButtonHTMLAttributes</span>&lt;<span class="t">HTMLButtonElement</span>&gt; {
+  variant?: <span class="s">'primary'</span> | <span class="s">'ghost'</span>
+  isLoading?: <span class="t">boolean</span>
+}
+
+<span class="c">// Generic component</span>
+<span class="k">function</span> <span class="f">List</span>&lt;<span class="t">T</span>&gt;({ items, <span class="f">renderItem</span> }: {
+  items: <span class="t">T</span>[]
+  <span class="f">renderItem</span>: (<span class="v">item</span>: <span class="t">T</span>, <span class="v">index</span>: <span class="t">number</span>) => <span class="t">React.ReactNode</span>
+}) { <span class="k">return</span> <span class="k">&lt;ul&gt;</span>{<span class="v">items</span>.<span class="f">map</span>((<span class="v">i</span>, <span class="v">idx</span>) => <span class="k">&lt;li</span> key={<span class="v">idx</span>}<span class="k">&gt;</span>{<span class="f">renderItem</span>(<span class="v">i</span>, <span class="v">idx</span>)}<span class="k">&lt;/li&gt;</span>)}<span class="k">&lt;/ul&gt;</span> }
+
+<span class="c">// Discriminated unions for variants</span>
+<span class="k">type</span> <span class="t">Alert</span> =
+  | { type: <span class="s">'success'</span>; message: <span class="t">string</span> }
+  | { type: <span class="s">'error'</span>;   message: <span class="t">string</span>; code: <span class="t">number</span> }
+  | { type: <span class="s">'loading'</span> }
+
+<span class="c">// Utility types</span>
+<span class="k">type</span> <span class="t">PartialUser</span>  = <span class="t">Partial</span>&lt;<span class="t">User</span>&gt;
+<span class="k">type</span> <span class="t">RequiredUser</span> = <span class="t">Required</span>&lt;<span class="t">User</span>&gt;
+<span class="k">type</span> <span class="t">ReadonlyUser</span> = <span class="t">Readonly</span>&lt;<span class="t">User</span>&gt;
+<span class="k">type</span> <span class="t">UserName</span>     = <span class="t">Pick</span>&lt;<span class="t">User</span>, <span class="s">'name'</span> | <span class="s">'email'</span>&gt;
+<span class="k">type</span> <span class="t">UserNoPass</span>   = <span class="t">Omit</span>&lt;<span class="t">User</span>, <span class="s">'password'</span>&gt;
+<span class="k">type</span> <span class="t">Handler</span>      = <span class="t">Parameters</span>&lt;<span class="k">typeof</span> useReducer&gt;[<span class="n">0</span>]
+<span class="k">type</span> <span class="t">ReturnVal</span>    = <span class="t">ReturnType</span>&lt;<span class="k">typeof</span> fetchUser&gt;</pre>
+  </div>
+</div>
+
+<div class="card a-lime">
+  <div class="ch"><div class="ci">📏</div><span class="ct">ESLint &amp; Prettier Config</span></div>
+  <div class="cb">
+    <pre><span class="c">// eslint.config.mjs (flat config — ESLint 9)</span>
+<span class="k">import</span> js <span class="k">from</span> <span class="s">'@eslint/js'</span>
+<span class="k">import</span> reactHooks <span class="k">from</span> <span class="s">'eslint-plugin-react-hooks'</span>
+<span class="k">import</span> tseslint <span class="k">from</span> <span class="s">'typescript-eslint'</span>
+
+<span class="k">export default</span> [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { <span class="s">'react-hooks'</span>: reactHooks },
+    rules: {
+      <span class="s">'react-hooks/rules-of-hooks'</span>:  <span class="s">'error'</span>,
+      <span class="s">'react-hooks/exhaustive-deps'</span>: <span class="s">'warn'</span>,
+      <span class="s">'@typescript-eslint/no-explicit-any'</span>: <span class="s">'warn'</span>,
+      <span class="s">'no-console'</span>: [<span class="s">'warn'</span>, { allow: [<span class="s">'warn'</span>, <span class="s">'error'</span>] }],
+    }
+  }
+]
+
+<span class="c">// .prettierrc</span>
+{
+  <span class="s">"semi"</span>: <span class="n">false</span>,
+  <span class="s">"singleQuote"</span>: <span class="n">true</span>,
+  <span class="s">"tabWidth"</span>: <span class="n">2</span>,
+  <span class="s">"trailingComma"</span>: <span class="s">"es5"</span>,
+  <span class="s">"printWidth"</span>: <span class="n">100</span>
+}
+
+<span class="c"># package.json scripts</span>
+<span class="s">"lint"</span>:   <span class="s">"eslint src --fix"</span>,
+<span class="s">"format"</span>: <span class="s">"prettier --write src"</span>,
+<span class="s">"check"</span>:  <span class="s">"tsc --noEmit && eslint src"</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top:60px;padding:22px 0;border-top:1px solid var(--bdr2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="color:var(--react);font-size:20px;animation:spin 8s linear infinite;display:inline-block;">⚛</span>
+    <span style="color:var(--muted);font-size:12px;">React 19 &amp; Modern JavaScript — ES2024 • TypeScript • Vitest • Playwright</span>
+  </div>
+  <div style="display:flex;gap:16px;">
+    <a href="https://react.dev" target="_blank" style="color:var(--react);font-size:12px;text-decoration:none;">React Docs ↗</a>
+    <a href="https://tc39.es/ecma262/" target="_blank" style="color:var(--muted2);font-size:12px;text-decoration:none;">ECMAScript Spec ↗</a>
+    <a href="https://tanstack.com" target="_blank" style="color:var(--muted2);font-size:12px;text-decoration:none;">TanStack ↗</a>
+    <a href="https://vitest.dev" target="_blank" style="color:var(--muted2);font-size:12px;text-decoration:none;">Vitest ↗</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+const links = document.querySelectorAll('.nl')
+const secs  = document.querySelectorAll('.sec')
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id))
+  })
+}, { rootMargin: '-54px 0px -60% 0px', threshold: 0.1 })
+secs.forEach(s => obs.observe(s))
+</script>
+</body>
+</html>

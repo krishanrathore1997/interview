@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel Deep Dive — Advanced Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0e1419;
+  --s2: #141c24;
+  --s3: #1a2330;
+  --s4: #1f2a38;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #d4dde8;
+  --muted: #5a6a7a;
+  --muted2: #7a8a9a;
+  --red: #ff4d4d;
+  --orange: #ff8c42;
+  --yellow: #f5c542;
+  --green: #4dffb4;
+  --teal: #00d4aa;
+  --blue: #4da6ff;
+  --purple: #c084fc;
+  --pink: #f472b6;
+  --cyan: #22d3ee;
+  --laravel: #FF2D20;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.6;
+  min-height:100vh;
+}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,12,16,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  display:flex;align-items:center;gap:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 24px 14px 0;
+  border-right:1px solid var(--border);
+  margin-right:8px;
+  flex-shrink:0;
+}
+.nav-logo .dot{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#FF2D20,#ff7043);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;color:#fff;
+}
+.nav-logo span{font-weight:700;font-size:13px;white-space:nowrap;color:var(--text);}
+.nav a{
+  font-size:12px;font-weight:500;
+  color:var(--muted2);
+  text-decoration:none;
+  padding:16px 14px;
+  white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:color .15s,border-color .15s;
+  display:block;
+}
+.nav a:hover{color:var(--text);border-bottom-color:var(--border2);}
+.nav a.active{color:var(--laravel);border-bottom-color:var(--laravel);}
+
+/* LAYOUT */
+.wrap{max-width:1380px;margin:0 auto;padding:40px 28px 100px;}
+
+/* SECTION HEADER */
+.sh{
+  display:flex;align-items:center;gap:14px;
+  margin:52px 0 20px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--border);
+}
+.sh:first-child{margin-top:0}
+.sh-icon{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex-shrink:0;
+}
+.sh-title{font-size:18px;font-weight:700;color:var(--text);}
+.sh-sub{font-size:12px;color:var(--muted2);margin-top:1px;}
+.tag{
+  display:inline-flex;align-items:center;
+  font-size:10px;font-weight:600;letter-spacing:.05em;
+  padding:3px 8px;border-radius:4px;
+  text-transform:uppercase;margin-left:8px;
+}
+.tag-perf{background:rgba(77,255,180,.1);color:var(--green);border:1px solid rgba(77,255,180,.2);}
+.tag-adv{background:rgba(192,132,252,.1);color:var(--purple);border:1px solid rgba(192,132,252,.2);}
+.tag-new{background:rgba(255,140,66,.1);color:var(--orange);border:1px solid rgba(255,140,66,.2);}
+.tag-tip{background:rgba(77,166,255,.1);color:var(--blue);border:1px solid rgba(77,166,255,.2);}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;}
+.grid-3{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));}
+.span2{grid-column:span 2;}
+
+/* CARD */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border2);}
+.ch{
+  display:flex;align-items:center;gap:9px;
+  padding:12px 16px;
+  background:var(--s2);
+  border-bottom:1px solid var(--border);
+}
+.ci{
+  width:24px;height:24px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;flex-shrink:0;
+}
+.ct{font-size:12px;font-weight:600;flex:1;}
+.cb{padding:14px 16px;}
+
+/* ACCENT COLORS */
+.ac-red .ci{background:rgba(255,77,77,.12);color:var(--red);}
+.ac-red .ct{color:var(--red);}
+.ac-red{border-color:rgba(255,77,77,.15);}
+
+.ac-orange .ci{background:rgba(255,140,66,.12);color:var(--orange);}
+.ac-orange .ct{color:var(--orange);}
+.ac-orange{border-color:rgba(255,140,66,.15);}
+
+.ac-yellow .ci{background:rgba(245,197,66,.12);color:var(--yellow);}
+.ac-yellow .ct{color:var(--yellow);}
+.ac-yellow{border-color:rgba(245,197,66,.15);}
+
+.ac-green .ci{background:rgba(77,255,180,.1);color:var(--green);}
+.ac-green .ct{color:var(--green);}
+.ac-green{border-color:rgba(77,255,180,.12);}
+
+.ac-teal .ci{background:rgba(0,212,170,.1);color:var(--teal);}
+.ac-teal .ct{color:var(--teal);}
+.ac-teal{border-color:rgba(0,212,170,.12);}
+
+.ac-blue .ci{background:rgba(77,166,255,.1);color:var(--blue);}
+.ac-blue .ct{color:var(--blue);}
+.ac-blue{border-color:rgba(77,166,255,.12);}
+
+.ac-purple .ci{background:rgba(192,132,252,.1);color:var(--purple);}
+.ac-purple .ct{color:var(--purple);}
+.ac-purple{border-color:rgba(192,132,252,.12);}
+
+.ac-pink .ci{background:rgba(244,114,182,.1);color:var(--pink);}
+.ac-pink .ct{color:var(--pink);}
+.ac-pink{border-color:rgba(244,114,182,.12);}
+
+.ac-cyan .ci{background:rgba(34,211,238,.1);color:var(--cyan);}
+.ac-cyan .ct{color:var(--cyan);}
+.ac-cyan{border-color:rgba(34,211,238,.12);}
+
+/* CODE */
+pre,code{font-family:var(--mono);font-size:11.5px;}
+pre{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:12px 14px;
+  overflow-x:auto;
+  line-height:1.75;
+  margin-bottom:10px;
+}
+pre:last-child{margin-bottom:0;}
+code{
+  background:var(--s3);
+  border:1px solid var(--border);
+  border-radius:3px;
+  padding:1px 5px;
+  color:var(--orange);
+  font-size:11px;
+}
+
+/* SYNTAX */
+.k{color:#ff7b72;}   /* keyword */
+.f{color:#c084fc;}   /* function/method */
+.s{color:#79c0ff;}   /* string */
+.c{color:#4a5568;}   /* comment */
+.v{color:#ff8c42;}   /* variable */
+.n{color:#4dffb4;}   /* number/bool */
+.cl{color:#f5c542;}  /* class name */
+.p{color:#4a5568;}   /* punctuation */
+.at{color:#22d3ee;}  /* artisan/terminal */
+
+/* DIVIDER */
+hr.d{border:none;border-top:1px solid var(--border);margin:12px 0;}
+
+/* LABEL */
+.lbl{
+  font-size:10px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);
+  margin:0 0 8px;
+}
+.lbl:not(:first-child){margin-top:14px;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl td{padding:5px 0;vertical-align:top;font-size:12px;}
+.tbl td:first-child{
+  font-family:var(--mono);font-size:11px;
+  color:var(--teal);padding-right:12px;
+  white-space:nowrap;
+}
+.tbl td:last-child{color:var(--muted2);}
+.tbl tr+tr td{border-top:1px solid var(--border);}
+
+/* ALERT / TIP BOX */
+.tip{
+  display:flex;gap:10px;
+  padding:10px 12px;border-radius:6px;
+  margin-bottom:10px;font-size:12px;
+}
+.tip:last-child{margin-bottom:0;}
+.tip-warn{background:rgba(245,197,66,.07);border:1px solid rgba(245,197,66,.2);color:#c9a72e;}
+.tip-good{background:rgba(77,255,180,.06);border:1px solid rgba(77,255,180,.15);color:#3dcf94;}
+.tip-info{background:rgba(77,166,255,.07);border:1px solid rgba(77,166,255,.2);color:#5aa0e0;}
+.tip-danger{background:rgba(255,77,77,.06);border:1px solid rgba(255,77,77,.18);color:#cc4040;}
+.tip-icon{flex-shrink:0;font-size:14px;}
+
+/* SECTION TABS */
+.section-id{scroll-margin-top:52px;}
+
+/* BADGE */
+.badge{
+  display:inline-block;font-size:10px;font-weight:600;
+  padding:2px 7px;border-radius:10px;
+  background:var(--s3);border:1px solid var(--border2);
+  color:var(--muted2);margin-left:4px;letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="dot">L</div>
+    <span>Laravel Deep Dive</span>
+  </div>
+  <a href="#eloquent">Eloquent</a>
+  <a href="#query">Query Builder</a>
+  <a href="#auth">Auth &amp; Security</a>
+  <a href="#queues">Queues &amp; Jobs</a>
+  <a href="#events">Events</a>
+  <a href="#testing">Testing</a>
+  <a href="#patterns">Patterns</a>
+  <a href="#perf">Performance</a>
+  <a href="#api">API Design</a>
+  <a href="#realtime">Real-time</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ELOQUENT DEEP DIVE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="eloquent" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(77,255,180,.1);color:var(--green);">🔮</div>
+  <div><div class="sh-title">Eloquent ORM — Deep Dive<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Relationships, Mutators, Casts, Observers, Global Scopes &amp; more</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-green">
+  <div class="ch"><div class="ci">🔗</div><span class="ct">Advanced Relationships</span></div>
+  <div class="cb">
+    <div class="lbl">Has One Through / Has Many Through</div>
+    <pre><span class="c">// Country → User → Post (3-level)</span>
+<span class="k">class</span> <span class="cl">Country</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="k">public function</span> <span class="f">posts</span>(): <span class="cl">HasManyThrough</span>
+    { <span class="k">return</span> <span class="v">$this</span>-><span class="f">hasManyThrough</span>(<span class="cl">Post</span>::<span class="k">class</span>, <span class="cl">User</span>::<span class="k">class</span>); }
+}
+
+<span class="c">// Polymorphic: comments on Posts AND Videos</span>
+<span class="k">class</span> <span class="cl">Comment</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="k">public function</span> <span class="f">commentable</span>(): <span class="cl">MorphTo</span>
+    { <span class="k">return</span> <span class="v">$this</span>-><span class="f">morphTo</span>(); }
+}
+<span class="k">class</span> <span class="cl">Post</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="k">public function</span> <span class="f">comments</span>(): <span class="cl">MorphMany</span>
+    { <span class="k">return</span> <span class="v">$this</span>-><span class="f">morphMany</span>(<span class="cl">Comment</span>::<span class="k">class</span>, <span class="s">'commentable'</span>); }
+}
+
+<span class="c">// Many-to-many polymorphic (tags on posts AND videos)</span>
+<span class="k">class</span> <span class="cl">Tag</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="k">public function</span> <span class="f">posts</span>(): <span class="cl">MorphToMany</span>
+    { <span class="k">return</span> <span class="v">$this</span>-><span class="f">morphedByMany</span>(<span class="cl">Post</span>::<span class="k">class</span>, <span class="s">'taggable'</span>); }
+}
+<span class="c">// pivot table: taggables (tag_id, taggable_id, taggable_type)</span></pre>
+    <div class="lbl">Relationship Query Methods</div>
+    <pre><span class="c">// Only posts that HAVE at least 1 comment</span>
+<span class="cl">Post</span>::<span class="f">has</span>(<span class="s">'comments'</span>)-><span class="f">get</span>();
+<span class="cl">Post</span>::<span class="f">has</span>(<span class="s">'comments'</span>, <span class="s">'>='</span>, <span class="n">5</span>)-><span class="f">get</span>();
+
+<span class="c">// Filter on related model columns</span>
+<span class="cl">Post</span>::<span class="f">whereHas</span>(<span class="s">'comments'</span>, <span class="k">fn</span>(<span class="v">$q</span>) =>
+    <span class="v">$q</span>-><span class="f">where</span>(<span class="s">'approved'</span>, <span class="n">true</span>)
+)-><span class="f">get</span>();
+
+<span class="c">// Eager load with constraints</span>
+<span class="cl">Post</span>::<span class="f">with</span>([<span class="s">'comments'</span> => <span class="k">fn</span>(<span class="v">$q</span>) =>
+    <span class="v">$q</span>-><span class="f">latest</span>()-><span class="f">limit</span>(<span class="n">3</span>)
+])-><span class="f">get</span>();
+
+<span class="c">// Lazy eager loading (after retrieval)</span>
+<span class="v">$posts</span>-><span class="f">load</span>(<span class="s">'comments.author'</span>);
+<span class="v">$posts</span>-><span class="f">loadMissing</span>(<span class="s">'tags'</span>); <span class="c">// only if not loaded</span>
+
+<span class="c">// withExists (boolean column, no extra query cost)</span>
+<span class="cl">Post</span>::<span class="f">withExists</span>(<span class="s">'comments as has_comments'</span>)-><span class="f">get</span>();</pre>
+  </div>
+</div>
+
+<div class="card ac-green">
+  <div class="ch"><div class="ci">🏷</div><span class="ct">Mutators, Casts &amp; Attributes</span></div>
+  <div class="cb">
+    <div class="lbl">Attribute API (Laravel 9+)</div>
+    <pre><span class="k">use</span> <span class="cl">Illuminate\Database\Eloquent\Casts\Attribute</span>;
+
+<span class="k">class</span> <span class="cl">User</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="c">// Combined get+set accessor</span>
+    <span class="k">protected function</span> <span class="f">firstName</span>(): <span class="cl">Attribute</span> {
+        <span class="k">return</span> <span class="cl">Attribute</span>::<span class="f">make</span>(
+            get: <span class="k">fn</span>(<span class="v">$v</span>) => <span class="f">ucfirst</span>(<span class="v">$v</span>),
+            set: <span class="k">fn</span>(<span class="v">$v</span>) => <span class="f">strtolower</span>(<span class="v">$v</span>),
+        );
+    }
+
+    <span class="c">// Computed from multiple columns</span>
+    <span class="k">protected function</span> <span class="f">fullName</span>(): <span class="cl">Attribute</span> {
+        <span class="k">return</span> <span class="cl">Attribute</span>::<span class="f">make</span>(
+            get: <span class="k">fn</span>() => <span class="s">"{$this->first_name} {$this->last_name}"</span>,
+        )-><span class="f">shouldCache</span>(); <span class="c">// cache computed value</span>
+    }
+
+    <span class="c">// Custom cast class</span>
+    <span class="k">protected function</span> <span class="f">casts</span>(): <span class="k">array</span> {
+        <span class="k">return</span> [
+            <span class="s">'password'</span>        => <span class="s">'hashed'</span>,        <span class="c">// auto-hash</span>
+            <span class="s">'email_verified'</span>  => <span class="s">'datetime'</span>,
+            <span class="s">'settings'</span>        => <span class="s">'array'</span>,
+            <span class="s">'balance'</span>         => <span class="s">'decimal:2'</span>,
+            <span class="s">'is_admin'</span>        => <span class="s">'boolean'</span>,
+            <span class="s">'role'</span>            => <span class="cl">UserRole</span>::<span class="k">class</span>, <span class="c">// PHP Enum</span>
+            <span class="s">'address'</span>         => <span class="cl">AddressCast</span>::<span class="k">class</span>,
+        ];
+    }
+}</pre>
+    <div class="lbl">Custom Cast Class</div>
+    <pre><span class="k">class</span> <span class="cl">AddressCast</span> <span class="k">implements</span> <span class="cl">CastsAttributes</span> {
+    <span class="k">public function</span> <span class="f">get</span>(<span class="v">$model</span>, <span class="v">$key</span>, <span class="v">$value</span>, <span class="v">$attrs</span>): <span class="cl">Address</span>
+    { <span class="k">return</span> <span class="k">new</span> <span class="cl">Address</span>(...<span class="f">json_decode</span>(<span class="v">$value</span>, <span class="n">true</span>)); }
+
+    <span class="k">public function</span> <span class="f">set</span>(<span class="v">$model</span>, <span class="v">$key</span>, <span class="v">$value</span>, <span class="v">$attrs</span>): <span class="k">string</span>
+    { <span class="k">return</span> <span class="f">json_encode</span>((array) <span class="v">$value</span>); }
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-teal">
+  <div class="ch"><div class="ci">🌍</div><span class="ct">Global Scopes &amp; Observers</span></div>
+  <div class="cb">
+    <div class="lbl">Global Scope — applies to ALL queries</div>
+    <pre><span class="c">// Define scope</span>
+<span class="k">class</span> <span class="cl">ActiveScope</span> <span class="k">implements</span> <span class="cl">Scope</span> {
+    <span class="k">public function</span> <span class="f">apply</span>(<span class="cl">Builder</span> <span class="v">$builder</span>, <span class="cl">Model</span> <span class="v">$model</span>): <span class="k">void</span>
+    { <span class="v">$builder</span>-><span class="f">where</span>(<span class="s">'active'</span>, <span class="n">true</span>); }
+}
+
+<span class="c">// Boot in model</span>
+<span class="k">protected static function</span> <span class="f">booted</span>(): <span class="k">void</span> {
+    static::<span class="f">addGlobalScope</span>(<span class="k">new</span> <span class="cl">ActiveScope</span>);
+    <span class="c">// Closure form:</span>
+    static::<span class="f">addGlobalScope</span>(<span class="s">'active'</span>, <span class="k">fn</span>(<span class="v">$b</span>) => <span class="v">$b</span>-><span class="f">where</span>(<span class="s">'active'</span>,<span class="n">true</span>));
+}
+
+<span class="c">// Remove global scope temporarily</span>
+<span class="cl">User</span>::<span class="f">withoutGlobalScope</span>(<span class="cl">ActiveScope</span>::<span class="k">class</span>)-><span class="f">get</span>();
+<span class="cl">User</span>::<span class="f">withoutGlobalScopes</span>()-><span class="f">get</span>(); <span class="c">// remove ALL</span></pre>
+    <div class="lbl">Model Observer</div>
+    <pre><span class="k">class</span> <span class="cl">PostObserver</span> {
+    <span class="k">public function</span> <span class="f">creating</span>(<span class="cl">Post</span> <span class="v">$post</span>): <span class="k">void</span> {
+        <span class="v">$post</span>->slug = <span class="cl">Str</span>::<span class="f">slug</span>(<span class="v">$post</span>->title);
+    }
+    <span class="k">public function</span> <span class="f">deleting</span>(<span class="cl">Post</span> <span class="v">$post</span>): <span class="k">void</span> {
+        <span class="v">$post</span>-><span class="f">comments</span>()-><span class="f">delete</span>(); <span class="c">// cascade in code</span>
+    }
+    <span class="k">public function</span> <span class="f">updated</span>(<span class="cl">Post</span> <span class="v">$post</span>): <span class="k">void</span> {
+        <span class="k">if</span> (<span class="v">$post</span>-><span class="f">wasChanged</span>(<span class="s">'published'</span>)) {
+            <span class="cl">Cache</span>::<span class="f">forget</span>(<span class="s">"post.{$post->id}"</span>);
+        }
+    }
+}
+<span class="c">// Register: AppServiceProvider or #[ObservedBy] attribute</span>
+<span class="cl">Post</span>::<span class="f">observe</span>(<span class="cl">PostObserver</span>::<span class="k">class</span>);</pre>
+  </div>
+</div>
+
+<div class="card ac-teal">
+  <div class="ch"><div class="ci">🔄</div><span class="ct">Many-to-Many Pivot Operations</span></div>
+  <div class="cb">
+    <pre><span class="c">// Attach / detach / sync / toggle</span>
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">attach</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]);
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">detach</span>(<span class="n">2</span>);
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">sync</span>([<span class="n">1</span>, <span class="n">3</span>, <span class="n">5</span>]);    <span class="c">// replaces all</span>
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">syncWithoutDetaching</span>([<span class="n">4</span>]);
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">toggle</span>([<span class="n">1</span>, <span class="n">2</span>]);    <span class="c">// flip on/off</span>
+
+<span class="c">// Attach with pivot data</span>
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">attach</span>(<span class="n">3</span>, [<span class="s">'order'</span> => <span class="n">1</span>, <span class="s">'featured'</span> => <span class="n">true</span>]);
+
+<span class="c">// Update pivot row</span>
+<span class="v">$post</span>-><span class="f">tags</span>()-><span class="f">updateExistingPivot</span>(<span class="n">3</span>, [<span class="s">'featured'</span> => <span class="n">false</span>]);
+
+<span class="c">// Access pivot in results (define in relationship)</span>
+<span class="k">public function</span> <span class="f">tags</span>() {
+    <span class="k">return</span> <span class="v">$this</span>-><span class="f">belongsToMany</span>(<span class="cl">Tag</span>::<span class="k">class</span>)
+        -><span class="f">withPivot</span>([<span class="s">'order'</span>, <span class="s">'featured'</span>])
+        -><span class="f">withTimestamps</span>()
+        -><span class="f">as</span>(<span class="s">'meta'</span>);  <span class="c">// rename pivot accessor</span>
+}
+<span class="c">// Usage: $post->tags->first()->meta->featured</span>
+
+<span class="c">// Custom pivot model</span>
+<span class="k">public function</span> <span class="f">roles</span>() {
+    <span class="k">return</span> <span class="v">$this</span>-><span class="f">belongsToMany</span>(<span class="cl">Role</span>::<span class="k">class</span>)
+        -><span class="f">using</span>(<span class="cl">UserRole</span>::<span class="k">class</span>); <span class="c">// UserRole extends Pivot</span>
+}</pre>
+  </div>
+</div>
+
+</div><!-- /grid -->
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- QUERY BUILDER DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="query" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(77,166,255,.1);color:var(--blue);">⚙</div>
+  <div><div class="sh-title">Query Builder — Advanced<span class="tag tag-perf">Performance</span></div>
+  <div class="sh-sub">Raw queries, sub-queries, window functions, chunking &amp; N+1 prevention</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-blue">
+  <div class="ch"><div class="ci">🔎</div><span class="ct">Subqueries &amp; Raw Expressions</span></div>
+  <div class="cb">
+    <pre><span class="c">// Subquery in select (no extra query per row)</span>
+<span class="cl">Post</span>::<span class="f">addSelect</span>([
+    <span class="s">'latest_comment'</span> => <span class="cl">Comment</span>::<span class="f">select</span>(<span class="s">'body'</span>)
+        -><span class="f">whereColumn</span>(<span class="s">'post_id'</span>, <span class="s">'posts.id'</span>)
+        -><span class="f">latest</span>()
+        -><span class="f">limit</span>(<span class="n">1</span>)
+])-><span class="f">get</span>();
+
+<span class="c">// Subquery in where</span>
+<span class="cl">Post</span>::<span class="f">whereIn</span>(<span class="s">'user_id'</span>, <span class="k">function</span> (<span class="v">$q</span>) {
+    <span class="v">$q</span>-><span class="f">select</span>(<span class="s">'id'</span>)-><span class="f">from</span>(<span class="s">'users'</span>)-><span class="f">where</span>(<span class="s">'verified'</span>, <span class="n">true</span>);
+})-><span class="f">get</span>();
+
+<span class="c">// Raw expressions — use sparingly, bindings protect from SQL injection</span>
+<span class="cl">DB</span>::<span class="f">table</span>(<span class="s">'orders'</span>)
+    -><span class="f">select</span>(<span class="cl">DB</span>::<span class="f">raw</span>(<span class="s">'YEAR(created_at) as year, SUM(total) as revenue'</span>))
+    -><span class="f">groupBy</span>(<span class="cl">DB</span>::<span class="f">raw</span>(<span class="s">'YEAR(created_at)'</span>))
+    -><span class="f">get</span>();
+
+<span class="c">// selectRaw / whereRaw / orderByRaw</span>
+<span class="cl">Post</span>::<span class="f">selectRaw</span>(<span class="s">'*, LENGTH(body) as body_length'</span>)
+    -><span class="f">whereRaw</span>(<span class="s">'views > ? AND published = ?'</span>, [<span class="n">100</span>, <span class="n">true</span>])
+    -><span class="f">orderByRaw</span>(<span class="s">'body_length DESC'</span>)
+    -><span class="f">get</span>();</pre>
+  </div>
+</div>
+
+<div class="card ac-blue">
+  <div class="ch"><div class="ci">📦</div><span class="ct">Chunking, Cursors &amp; Lazy Collections</span></div>
+  <div class="cb">
+    <div class="tip tip-warn"><span class="tip-icon">⚠</span>Never use <code>all()</code> on large tables — it loads everything into memory at once.</div>
+    <pre><span class="c">// chunk — processes in batches of N, memory safe</span>
+<span class="cl">Post</span>::<span class="f">chunk</span>(<span class="n">200</span>, <span class="k">function</span> (<span class="cl">Collection</span> <span class="v">$posts</span>) {
+    <span class="k">foreach</span> (<span class="v">$posts</span> <span class="k">as</span> <span class="v">$post</span>) {
+        <span class="f">processPost</span>(<span class="v">$post</span>);
+    }
+});
+
+<span class="c">// chunkById — safest when modifying records during iteration</span>
+<span class="cl">Post</span>::<span class="f">chunkById</span>(<span class="n">100</span>, <span class="k">function</span> (<span class="v">$posts</span>) {
+    <span class="v">$posts</span>-><span class="f">each</span>-><span class="f">update</span>([<span class="s">'processed'</span> => <span class="n">true</span>]);
+});
+
+<span class="c">// cursor — PHP generator, one model in memory at a time</span>
+<span class="k">foreach</span> (<span class="cl">Post</span>::<span class="f">cursor</span>() <span class="k">as</span> <span class="v">$post</span>) {
+    <span class="f">processPost</span>(<span class="v">$post</span>);
+}
+
+<span class="c">// lazy — lazy collection, best of both worlds</span>
+<span class="cl">Post</span>::<span class="f">lazy</span>()-><span class="f">each</span>(<span class="k">function</span> (<span class="v">$post</span>) {
+    <span class="f">processPost</span>(<span class="v">$post</span>);
+});
+
+<span class="c">// lazyById — cursor + chunks, safest for large datasets</span>
+<span class="cl">Post</span>::<span class="f">lazyById</span>()-><span class="f">filter</span>(<span class="k">fn</span>(<span class="v">$p</span>) => <span class="v">$p</span>->needsUpdate())-><span class="f">each</span>(...);</pre>
+  </div>
+</div>
+
+<div class="card ac-blue">
+  <div class="ch"><div class="ci">🚫</div><span class="ct">N+1 Detection &amp; Prevention</span></div>
+  <div class="cb">
+    <div class="tip tip-danger"><span class="tip-icon">💥</span>N+1 is the #1 Eloquent performance killer. 100 posts × 1 user query = 101 queries.</div>
+    <pre><span class="c">// ENABLE strict mode in AppServiceProvider (throws on N+1)</span>
+<span class="cl">Model</span>::<span class="f">preventLazyLoading</span>(! <span class="f">app</span>()-><span class="f">isProduction</span>());
+
+<span class="c">// BAD — triggers N+1 (one query per post)</span>
+<span class="v">$posts</span> = <span class="cl">Post</span>::<span class="f">all</span>();
+<span class="k">foreach</span> (<span class="v">$posts</span> <span class="k">as</span> <span class="v">$post</span>) {
+    <span class="k">echo</span> <span class="v">$post</span>->user->name; <span class="c">// ← LAZY load = N queries</span>
+}
+
+<span class="c">// GOOD — eager load relationships</span>
+<span class="v">$posts</span> = <span class="cl">Post</span>::<span class="f">with</span>(<span class="s">'user'</span>)-><span class="f">get</span>(); <span class="c">// 2 queries total</span>
+
+<span class="c">// Nested eager loading</span>
+<span class="cl">Post</span>::<span class="f">with</span>(<span class="s">'comments.author'</span>, <span class="s">'tags'</span>, <span class="s">'user.profile'</span>)-><span class="f">get</span>();
+
+<span class="c">// withCount — adds *_count column, no extra model hydration</span>
+<span class="cl">Post</span>::<span class="f">withCount</span>([<span class="s">'comments'</span>, <span class="s">'likes'</span>])-><span class="f">get</span>();
+<span class="c">// $post->comments_count, $post->likes_count</span>
+
+<span class="c">// withSum / withAvg / withMin / withMax</span>
+<span class="cl">Post</span>::<span class="f">withSum</span>(<span class="s">'likes'</span>, <span class="s">'count'</span>)-><span class="f">get</span>();
+<span class="c">// $post->likes_sum_count</span></pre>
+  </div>
+</div>
+
+<div class="card ac-blue">
+  <div class="ch"><div class="ci">📊</div><span class="ct">Upserts, Bulk Operations &amp; Transactions</span></div>
+  <div class="cb">
+    <pre><span class="c">// upsert — insert or update (1 query!)</span>
+<span class="cl">Post</span>::<span class="f">upsert</span>(
+    [
+        [<span class="s">'slug'</span> => <span class="s">'hello'</span>, <span class="s">'title'</span> => <span class="s">'Hello World'</span>, <span class="s">'views'</span> => <span class="n">0</span>],
+        [<span class="s">'slug'</span> => <span class="s">'world'</span>, <span class="s">'title'</span> => <span class="s">'World Post'</span>,  <span class="s">'views'</span> => <span class="n">0</span>],
+    ],
+    uniqueBy: [<span class="s">'slug'</span>],   <span class="c">// conflict columns</span>
+    update: [<span class="s">'title'</span>, <span class="s">'views'</span>] <span class="c">// update these on conflict</span>
+);
+
+<span class="c">// Bulk insert (faster than creating one by one)</span>
+<span class="cl">Post</span>::<span class="f">insert</span>([
+    [<span class="s">'title'</span> => <span class="s">'A'</span>, <span class="s">'created_at'</span> => <span class="f">now</span>()],
+    [<span class="s">'title'</span> => <span class="s">'B'</span>, <span class="s">'created_at'</span> => <span class="f">now</span>()],
+]); <span class="c">// note: no model events fired</span>
+
+<span class="c">// Transactions</span>
+<span class="cl">DB</span>::<span class="f">transaction</span>(<span class="k">function</span> () {
+    <span class="v">$order</span> = <span class="cl">Order</span>::<span class="f">create</span>([...]);
+    <span class="v">$order</span>-><span class="f">items</span>()-><span class="f">createMany</span>([...]);
+    <span class="cl">Inventory</span>::<span class="f">decrement</span>(<span class="v">$order</span>-><span class="f">items</span>());
+}); <span class="c">// auto rollback on exception</span>
+
+<span class="c">// Manual transaction</span>
+<span class="cl">DB</span>::<span class="f">beginTransaction</span>();
+<span class="k">try</span> { … <span class="cl">DB</span>::<span class="f">commit</span>(); }
+<span class="k">catch</span> (<span class="cl">Throwable</span> <span class="v">$e</span>) { <span class="cl">DB</span>::<span class="f">rollBack</span>(); <span class="k">throw</span> <span class="v">$e</span>; }</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- AUTH & SECURITY DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="auth" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(255,77,77,.1);color:var(--red);">🔐</div>
+  <div><div class="sh-title">Authentication &amp; Security — Deep Dive<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Multi-auth, Sanctum, custom guards, 2FA patterns, rate limiting</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-red">
+  <div class="ch"><div class="ci">🛡</div><span class="ct">Custom Auth Guards</span></div>
+  <div class="cb">
+    <pre><span class="c">// config/auth.php</span>
+<span class="s">'guards'</span> => [
+    <span class="s">'web'</span>   => [<span class="s">'driver'</span> => <span class="s">'session'</span>, <span class="s">'provider'</span> => <span class="s">'users'</span>],
+    <span class="s">'admin'</span> => [<span class="s">'driver'</span> => <span class="s">'session'</span>, <span class="s">'provider'</span> => <span class="s">'admins'</span>],
+    <span class="s">'api'</span>   => [<span class="s">'driver'</span> => <span class="s">'sanctum'</span>, <span class="s">'provider'</span> => <span class="s">'users'</span>],
+],
+<span class="s">'providers'</span> => [
+    <span class="s">'users'</span>  => [<span class="s">'driver'</span> => <span class="s">'eloquent'</span>, <span class="s">'model'</span> => <span class="cl">User</span>::<span class="k">class</span>],
+    <span class="s">'admins'</span> => [<span class="s">'driver'</span> => <span class="s">'eloquent'</span>, <span class="s">'model'</span> => <span class="cl">Admin</span>::<span class="k">class</span>],
+],
+
+<span class="c">// Use specific guard</span>
+<span class="cl">Auth</span>::<span class="f">guard</span>(<span class="s">'admin'</span>)-><span class="f">attempt</span>([<span class="s">'email'</span> => <span class="v">$e</span>, <span class="s">'password'</span> => <span class="v">$p</span>]);
+<span class="cl">Auth</span>::<span class="f">guard</span>(<span class="s">'admin'</span>)-><span class="f">user</span>();
+
+<span class="c">// Middleware for specific guard</span>
+<span class="cl">Route</span>::<span class="f">middleware</span>(<span class="s">'auth:admin'</span>)-><span class="f">group</span>(...);</pre>
+  </div>
+</div>
+
+<div class="card ac-red">
+  <div class="ch"><div class="ci">🔑</div><span class="ct">Sanctum — SPA &amp; API Token Auth</span></div>
+  <div class="cb">
+    <div class="lbl">API Token (stateless)</div>
+    <pre><span class="c">// Create token with abilities</span>
+<span class="v">$token</span> = <span class="v">$user</span>-><span class="f">createToken</span>(<span class="s">'mobile-app'</span>, [<span class="s">'posts:read'</span>, <span class="s">'posts:write'</span>]);
+<span class="k">return</span> [<span class="s">'token'</span> => <span class="v">$token</span>->plainTextToken];
+
+<span class="c">// Check ability in controller</span>
+<span class="v">$request</span>-><span class="f">user</span>()-><span class="f">tokenCan</span>(<span class="s">'posts:write'</span>);
+
+<span class="c">// Middleware ability check</span>
+<span class="cl">Route</span>::<span class="f">middleware</span>([<span class="s">'auth:sanctum'</span>, <span class="s">'ability:posts:write'</span>]);
+
+<span class="c">// Expire tokens</span>
+<span class="c">// config/sanctum.php → 'expiration' => 60 * 24 * 7 (minutes)</span>
+
+<span class="c">// Revoke</span>
+<span class="v">$user</span>-><span class="f">currentAccessToken</span>()-><span class="f">delete</span>(); <span class="c">// current</span>
+<span class="v">$user</span>-><span class="f">tokens</span>()-><span class="f">delete</span>();              <span class="c">// all tokens</span>
+<span class="v">$user</span>-><span class="f">tokens</span>()-><span class="f">where</span>(<span class="s">'name'</span>, <span class="s">'mobile-app'</span>)-><span class="f">delete</span>();</pre>
+    <div class="lbl">SPA Auth (stateful cookie-based)</div>
+    <pre><span class="c">// cors.php — allow your SPA domain</span>
+<span class="s">'allowed_origins'</span> => [<span class="f">env</span>(<span class="s">'FRONTEND_URL'</span>, <span class="s">'http://localhost:3000'</span>)],
+
+<span class="c">// sanctum.php — stateful domains</span>
+<span class="s">'stateful'</span> => <span class="f">explode</span>(<span class="s">','</span>, <span class="f">env</span>(<span class="s">'SANCTUM_STATEFUL_DOMAINS'</span>)),
+
+<span class="c">// SPA: GET /sanctum/csrf-cookie → then POST /login</span>
+<span class="c">// Use auth:sanctum middleware on API routes</span></pre>
+  </div>
+</div>
+
+<div class="card ac-pink">
+  <div class="ch"><div class="ci">⚡</div><span class="ct">Rate Limiting — Advanced</span></div>
+  <div class="cb">
+    <pre><span class="c">// bootstrap/app.php — define named limiters</span>
+<span class="cl">RateLimiter</span>::<span class="f">for</span>(<span class="s">'api'</span>, <span class="k">function</span> (<span class="cl">Request</span> <span class="v">$request</span>) {
+    <span class="k">return</span> <span class="v">$request</span>-><span class="f">user</span>()
+        ? <span class="cl">Limit</span>::<span class="f">perMinute</span>(<span class="n">60</span>)-><span class="f">by</span>(<span class="v">$request</span>-><span class="f">user</span>()->id)
+        : <span class="cl">Limit</span>::<span class="f">perMinute</span>(<span class="n">10</span>)-><span class="f">by</span>(<span class="v">$request</span>-><span class="f">ip</span>());
+});
+
+<span class="c">// Tiered limits (premium vs free)</span>
+<span class="cl">RateLimiter</span>::<span class="f">for</span>(<span class="s">'uploads'</span>, <span class="k">function</span> (<span class="cl">Request</span> <span class="v">$request</span>) {
+    <span class="k">return</span> <span class="k">match</span> (<span class="n">true</span>) {
+        <span class="v">$request</span>-><span class="f">user</span>()?->isPremium() => <span class="cl">Limit</span>::<span class="f">perHour</span>(<span class="n">500</span>),
+        <span class="k">default</span>                          => <span class="cl">Limit</span>::<span class="f">perHour</span>(<span class="n">50</span>),
+    };
+});
+
+<span class="c">// Multiple limits stacked</span>
+<span class="cl">RateLimiter</span>::<span class="f">for</span>(<span class="s">'login'</span>, <span class="k">fn</span>(<span class="v">$r</span>) => [
+    <span class="cl">Limit</span>::<span class="f">perMinute</span>(<span class="n">5</span>),
+    <span class="cl">Limit</span>::<span class="f">perDay</span>(<span class="n">50</span>)-><span class="f">by</span>(<span class="v">$r</span>-><span class="f">ip</span>()),
+]);
+
+<span class="c">// Apply to route</span>
+<span class="cl">Route</span>::<span class="f">middleware</span>(<span class="s">'throttle:api'</span>)-><span class="f">group</span>(...);
+<span class="cl">Route</span>::<span class="f">middleware</span>(<span class="s">'throttle:60,1'</span>)-><span class="f">group</span>(...); <span class="c">// inline</span></pre>
+  </div>
+</div>
+
+<div class="card ac-pink">
+  <div class="ch"><div class="ci">🔒</div><span class="ct">Password Security &amp; Encryption</span></div>
+  <div class="cb">
+    <pre><span class="c">// Password hashing (automatic with 'hashed' cast)</span>
+<span class="cl">Hash</span>::<span class="f">make</span>(<span class="s">'password'</span>);
+<span class="cl">Hash</span>::<span class="f">check</span>(<span class="s">'plaintext'</span>, <span class="v">$hashed</span>);
+<span class="cl">Hash</span>::<span class="f">needsRehash</span>(<span class="v">$hashed</span>); <span class="c">// check if algo changed</span>
+
+<span class="c">// Encryption (symmetric, uses APP_KEY)</span>
+<span class="cl">Crypt</span>::<span class="f">encryptString</span>(<span class="s">'secret'</span>);
+<span class="cl">Crypt</span>::<span class="f">decryptString</span>(<span class="v">$encrypted</span>);
+
+<span class="c">// Signed URLs (tamper-proof, time-limited)</span>
+<span class="v">$url</span> = <span class="cl">URL</span>::<span class="f">temporarySignedRoute</span>(
+    <span class="s">'invoice.download'</span>,
+    <span class="f">now</span>()-><span class="f">addHour</span>(),
+    [<span class="s">'invoice'</span> => <span class="n">42</span>]
+);
+<span class="c">// Validate in controller:</span>
+<span class="k">if</span> (! <span class="v">$request</span>-><span class="f">hasValidSignature</span>()) <span class="f">abort</span>(<span class="n">403</span>);
+
+<span class="c">// CSRF — always included in web middleware group</span>
+<span class="c">// Blade: @csrf  | API: use 'api' middleware group (no CSRF)</span>
+
+<span class="c">// Security headers (add in Middleware)</span>
+<span class="k">return</span> <span class="v">$next</span>(<span class="v">$request</span>)-><span class="f">withHeaders</span>([
+    <span class="s">'X-Frame-Options'</span>        => <span class="s">'DENY'</span>,
+    <span class="s">'X-Content-Type-Options'</span> => <span class="s">'nosniff'</span>,
+    <span class="s">'Referrer-Policy'</span>        => <span class="s">'strict-origin'</span>,
+]);</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- QUEUES & JOBS DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="queues" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(245,197,66,.1);color:var(--yellow);">📮</div>
+  <div><div class="sh-title">Queues &amp; Jobs — Deep Dive<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Batching, chaining, retries, unique jobs, Horizon monitoring</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-yellow">
+  <div class="ch"><div class="ci">⛓</div><span class="ct">Job Chaining &amp; Batching</span></div>
+  <div class="cb">
+    <div class="lbl">Chain — sequential execution</div>
+    <pre><span class="c">// Run jobs in order — next only starts if previous succeeds</span>
+<span class="cl">Bus</span>::<span class="f">chain</span>([
+    <span class="k">new</span> <span class="cl">ProcessPayment</span>(<span class="v">$order</span>),
+    <span class="k">new</span> <span class="cl">SendReceipt</span>(<span class="v">$order</span>),
+    <span class="k">new</span> <span class="cl">UpdateInventory</span>(<span class="v">$order</span>),
+])-><span class="f">catch</span>(<span class="k">function</span> (<span class="cl">Throwable</span> <span class="v">$e</span>) {
+    <span class="c">// fires if ANY job fails</span>
+})-><span class="f">dispatch</span>();</pre>
+    <div class="lbl">Batch — parallel execution with progress</div>
+    <pre><span class="v">$batch</span> = <span class="cl">Bus</span>::<span class="f">batch</span>([
+    <span class="k">new</span> <span class="cl">ImportRow</span>(<span class="v">$row1</span>),
+    <span class="k">new</span> <span class="cl">ImportRow</span>(<span class="v">$row2</span>),
+    <span class="k">new</span> <span class="cl">ImportRow</span>(<span class="v">$row3</span>),
+])-><span class="f">then</span>(<span class="k">function</span> (<span class="cl">Batch</span> <span class="v">$batch</span>) {
+    <span class="c">// all jobs completed</span>
+})-><span class="f">catch</span>(<span class="k">function</span> (<span class="cl">Batch</span> <span class="v">$batch</span>, <span class="cl">Throwable</span> <span class="v">$e</span>) {
+    <span class="c">// first failure</span>
+})-><span class="f">finally</span>(<span class="k">function</span> (<span class="cl">Batch</span> <span class="v">$batch</span>) {
+    <span class="c">// always runs when batch finishes</span>
+})-><span class="f">name</span>(<span class="s">'CSV Import'</span>)
+   -><span class="f">onQueue</span>(<span class="s">'imports'</span>)
+   -><span class="f">allowFailures</span>()   <span class="c">// don't cancel on single failure</span>
+   -><span class="f">dispatch</span>();
+
+<span class="c">// Check batch progress</span>
+<span class="v">$batch</span> = <span class="cl">Bus</span>::<span class="f">findBatch</span>(<span class="v">$batch</span>->id);
+<span class="v">$batch</span>->progress();   <span class="c">// 0–100</span>
+<span class="v">$batch</span>->finished();
+<span class="v">$batch</span>->failedJobs;</pre>
+  </div>
+</div>
+
+<div class="card ac-yellow">
+  <div class="ch"><div class="ci">🔁</div><span class="ct">Retries, Timeouts &amp; Failure Handling</span></div>
+  <div class="cb">
+    <pre><span class="k">class</span> <span class="cl">ProcessPayment</span> <span class="k">implements</span> <span class="cl">ShouldQueue</span>
+{
+    <span class="k">use</span> <span class="cl">InteractsWithQueue</span>, <span class="cl">Queueable</span>;
+
+    <span class="k">public</span> <span class="v">$tries</span>           = <span class="n">5</span>;      <span class="c">// max attempts</span>
+    <span class="k">public</span> <span class="v">$timeout</span>         = <span class="n">120</span>;   <span class="c">// seconds before force-kill</span>
+    <span class="k">public</span> <span class="v">$maxExceptions</span>   = <span class="n">3</span>;     <span class="c">// distinct exceptions before fail</span>
+    <span class="k">public</span> <span class="v">$backoff</span>         = [<span class="n">1</span>, <span class="n">5</span>, <span class="n">10</span>]; <span class="c">// seconds between retries</span>
+
+    <span class="c">// Exponential backoff</span>
+    <span class="k">public function</span> <span class="f">backoff</span>(): <span class="k">array</span>
+    { <span class="k">return</span> [<span class="n">2</span>, <span class="n">4</span>, <span class="n">8</span>, <span class="n">16</span>, <span class="n">32</span>]; }
+
+    <span class="k">public function</span> <span class="f">retryUntil</span>(): <span class="cl">DateTime</span>
+    { <span class="k">return</span> <span class="f">now</span>()-><span class="f">addHours</span>(<span class="n">4</span>); } <span class="c">// retry for up to 4h</span>
+
+    <span class="k">public function</span> <span class="f">failed</span>(<span class="cl">Throwable</span> <span class="v">$exception</span>): <span class="k">void</span>
+    {
+        <span class="c">// Called after all retries exhausted</span>
+        <span class="cl">Log</span>::<span class="f">critical</span>(<span class="s">'Payment failed'</span>, [<span class="s">'error'</span> => <span class="v">$exception</span>-><span class="f">getMessage</span>()]);
+        <span class="v">$this</span>->order-><span class="f">update</span>([<span class="s">'status'</span> => <span class="s">'failed'</span>]);
+    }
+
+    <span class="k">public function</span> <span class="f">handle</span>(): <span class="k">void</span>
+    {
+        <span class="k">if</span> (<span class="v">$this</span>->order->isPaid()) {
+            <span class="k">return</span> <span class="v">$this</span>-><span class="f">delete</span>(); <span class="c">// idempotency check</span>
+        }
+        <span class="c">// ... process payment</span>
+    }
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🔒</div><span class="ct">Unique Jobs &amp; Without Overlapping</span></div>
+  <div class="cb">
+    <div class="tip tip-info"><span class="tip-icon">💡</span><code>ShouldBeUnique</code> ensures only one instance of a job exists in the queue at a time.</div>
+    <pre><span class="k">class</span> <span class="cl">GenerateReport</span> <span class="k">implements</span> <span class="cl">ShouldQueue</span>, <span class="cl">ShouldBeUnique</span>
+{
+    <span class="k">public</span> <span class="v">$uniqueFor</span> = <span class="n">3600</span>; <span class="c">// lock expires after 1 hour</span>
+
+    <span class="c">// Unique per user (not just per job class)</span>
+    <span class="k">public function</span> <span class="f">uniqueId</span>(): <span class="k">string</span>
+    { <span class="k">return</span> <span class="v">$this</span>->user->id; }
+}
+
+<span class="c">// ShouldBeUniqueUntilProcessing — lock only while queued</span>
+<span class="c">// (released when job starts, not finishes)</span>
+<span class="k">class</span> <span class="cl">SyncUserData</span> <span class="k">implements</span> <span class="cl">ShouldQueue</span>, <span class="cl">ShouldBeUniqueUntilProcessing</span> {}
+
+<span class="c">// WithoutOverlapping middleware — lock while running</span>
+<span class="k">public function</span> <span class="f">middleware</span>(): <span class="k">array</span>
+{
+    <span class="k">return</span> [
+        (<span class="k">new</span> <span class="cl">WithoutOverlapping</span>(<span class="v">$this</span>->user->id))
+            -><span class="f">dontRelease</span>()         <span class="c">// discard if overlapping</span>
+            -><span class="f">expireAfter</span>(<span class="n">300</span>),    <span class="c">// lock expires in 5 min</span>
+        <span class="k">new</span> <span class="cl">RateLimited</span>(<span class="s">'emails'</span>), <span class="c">// rate limit the job itself</span>
+    ];
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🔭</div><span class="ct">Horizon — Queue Monitoring</span></div>
+  <div class="cb">
+    <pre><span class="at">composer require laravel/horizon
+php artisan horizon:install
+php artisan horizon</span>  <span class="c"># Dashboard at /horizon</span>
+
+<span class="c">// config/horizon.php — supervisor config</span>
+<span class="s">'environments'</span> => [
+    <span class="s">'production'</span> => [
+        <span class="s">'supervisor-1'</span> => [
+            <span class="s">'maxProcesses'</span>    => <span class="n">10</span>,
+            <span class="s">'balanceMaxShift'</span> => <span class="n">1</span>,
+            <span class="s">'balanceCooldown'</span> => <span class="n">3</span>,
+        ],
+        <span class="s">'supervisor-high'</span> => [
+            <span class="s">'connection'</span>  => <span class="s">'redis'</span>,
+            <span class="s">'queue'</span>       => [<span class="s">'high'</span>, <span class="s">'payments'</span>],
+            <span class="s">'maxProcesses'</span> => <span class="n">5</span>,
+        ],
+    ],
+],
+
+<span class="c">// Tags — tag jobs for Horizon monitoring</span>
+<span class="k">public function</span> <span class="f">tags</span>(): <span class="k">array</span>
+{ <span class="k">return</span> [<span class="s">'user:'</span>.<span class="v">$this</span>->user->id, <span class="s">'payment'</span>]; }</pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- EVENTS DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="events" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(192,132,252,.1);color:var(--purple);">📡</div>
+  <div><div class="sh-title">Events, Broadcasting &amp; Real-time<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Broadcastable events, Echo, Reverb, private channels</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-purple">
+  <div class="ch"><div class="ci">📣</div><span class="ct">Broadcastable Events</span></div>
+  <div class="cb">
+    <pre><span class="k">class</span> <span class="cl">OrderStatusUpdated</span> <span class="k">implements</span> <span class="cl">ShouldBroadcast</span>
+{
+    <span class="k">use</span> <span class="cl">Dispatchable</span>, <span class="cl">SerializesModels</span>;
+
+    <span class="k">public function</span> __<span class="f">construct</span>(<span class="k">public</span> <span class="cl">Order</span> <span class="v">$order</span>) {}
+
+    <span class="c">// Which channel(s) to broadcast on</span>
+    <span class="k">public function</span> <span class="f">broadcastOn</span>(): <span class="k">array</span>
+    {
+        <span class="k">return</span> [
+            <span class="k">new</span> <span class="cl">PrivateChannel</span>(<span class="s">'orders.'</span>.<span class="v">$this</span>->order->id),
+            <span class="k">new</span> <span class="cl">Channel</span>(<span class="s">'public-orders'</span>),        <span class="c">// public</span>
+            <span class="k">new</span> <span class="cl">PresenceChannel</span>(<span class="s">'order-room'</span>),  <span class="c">// presence</span>
+        ];
+    }
+
+    <span class="c">// Customize broadcast payload</span>
+    <span class="k">public function</span> <span class="f">broadcastWith</span>(): <span class="k">array</span>
+    { <span class="k">return</span> [<span class="s">'id'</span> => <span class="v">$this</span>->order->id, <span class="s">'status'</span> => <span class="v">$this</span>->order->status]; }
+
+    <span class="c">// Custom event name on frontend</span>
+    <span class="k">public function</span> <span class="f">broadcastAs</span>(): <span class="k">string</span>
+    { <span class="k">return</span> <span class="s">'order.status.updated'</span>; }
+
+    <span class="c">// Only broadcast if condition true</span>
+    <span class="k">public function</span> <span class="f">broadcastWhen</span>(): <span class="k">bool</span>
+    { <span class="k">return</span> <span class="v">$this</span>->order->status !== <span class="s">'draft'</span>; }
+}
+
+<span class="c">// Use ShouldBroadcastNow to skip the queue</span>
+<span class="k">class</span> <span class="cl">TypingIndicator</span> <span class="k">implements</span> <span class="cl">ShouldBroadcastNow</span> {}</pre>
+  </div>
+</div>
+
+<div class="card ac-purple">
+  <div class="ch"><div class="ci">🔐</div><span class="ct">Channel Authorization &amp; Presence</span></div>
+  <div class="cb">
+    <pre><span class="c">// routes/channels.php</span>
+<span class="cl">Broadcast</span>::<span class="f">channel</span>(<span class="s">'orders.{orderId}'</span>, <span class="k">function</span> (<span class="cl">User</span> <span class="v">$user</span>, <span class="k">int</span> <span class="v">$orderId</span>) {
+    <span class="k">return</span> <span class="cl">Order</span>::<span class="f">where</span>(<span class="s">'id'</span>, <span class="v">$orderId</span>)-><span class="f">where</span>(<span class="s">'user_id'</span>, <span class="v">$user</span>->id)-><span class="f">exists</span>();
+});
+
+<span class="c">// Presence channel — returns user data to all members</span>
+<span class="cl">Broadcast</span>::<span class="f">channel</span>(<span class="s">'room.{roomId}'</span>, <span class="k">function</span> (<span class="cl">User</span> <span class="v">$user</span>, <span class="k">int</span> <span class="v">$roomId</span>) {
+    <span class="k">if</span> (<span class="v">$user</span>-><span class="f">canJoinRoom</span>(<span class="v">$roomId</span>)) {
+        <span class="k">return</span> [<span class="s">'id'</span> => <span class="v">$user</span>->id, <span class="s">'name'</span> => <span class="v">$user</span>->name];
+    }
+});
+
+<span class="c">// JavaScript (Laravel Echo + Reverb/Pusher)</span>
+<span class="c">// Echo.private('orders.42')</span>
+<span class="c">//   .listen('.order.status.updated', (e) => console.log(e))</span>
+<span class="c">//   .error((err) => console.error(err));</span>
+
+<span class="c">// Echo.join('room.1')</span>
+<span class="c">//   .here((users) => ...)    // current members</span>
+<span class="c">//   .joining((user) => ...)  // new join</span>
+<span class="c">//   .leaving((user) => ...)  // member left</span>
+
+<span class="c">// Reverb (self-hosted WebSocket server — Laravel 11+)</span>
+<span class="at">composer require laravel/reverb
+php artisan reverb:install
+php artisan reverb:start</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TESTING DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="testing" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(77,255,180,.1);color:var(--green);">🧪</div>
+  <div><div class="sh-title">Testing — TDD &amp; Advanced Patterns<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Pest PHP, data providers, architecture tests, browser tests (Dusk)</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-green">
+  <div class="ch"><div class="ci">🐛</div><span class="ct">Pest PHP — Modern Testing</span></div>
+  <div class="cb">
+    <pre><span class="c">// Install Pest</span>
+<span class="at">composer require pestphp/pest --dev
+php artisan pest:install</span>
+
+<span class="c">// test() / it() functions (cleaner syntax)</span>
+<span class="f">it</span>(<span class="s">'can create a post'</span>, <span class="k">function</span> () {
+    <span class="v">$user</span> = <span class="cl">User</span>::<span class="f">factory</span>()-><span class="f">create</span>();
+
+    <span class="f">actingAs</span>(<span class="v">$user</span>)
+        -><span class="f">post</span>(<span class="s">'/posts'</span>, [<span class="s">'title'</span> => <span class="s">'Hello'</span>, <span class="s">'body'</span> => <span class="s">'World'</span>])
+        -><span class="f">assertCreated</span>();
+
+    <span class="f">assertDatabaseHas</span>(<span class="s">'posts'</span>, [<span class="s">'title'</span> => <span class="s">'Hello'</span>]);
+});
+
+<span class="c">// Dataset (data provider)</span>
+<span class="f">it</span>(<span class="s">'validates required fields'</span>, <span class="k">function</span> (<span class="k">string</span> <span class="v">$field</span>) {
+    <span class="f">actingAs</span>(<span class="cl">User</span>::<span class="f">factory</span>()-><span class="f">create</span>())
+        -><span class="f">post</span>(<span class="s">'/posts'</span>, <span class="f">array_except</span>(<span class="f">validData</span>(), [<span class="v">$field</span>]))
+        -><span class="f">assertSessionHasErrors</span>(<span class="v">$field</span>);
+})-><span class="f">with</span>([<span class="s">'title'</span>, <span class="s">'body'</span>]);
+
+<span class="c">// describe() groups</span>
+<span class="f">describe</span>(<span class="s">'PostController'</span>, <span class="k">function</span> () {
+    <span class="f">beforeEach</span>(<span class="k">function</span> () {
+        <span class="v">$this</span>->user = <span class="cl">User</span>::<span class="f">factory</span>()-><span class="f">create</span>();
+    });
+
+    <span class="f">it</span>(<span class="s">'lists posts'</span>, <span class="k">function</span> () {
+        <span class="f">actingAs</span>(<span class="v">$this</span>->user)
+            -><span class="f">get</span>(<span class="s">'/posts'</span>)
+            -><span class="f">assertOk</span>();
+    });
+});</pre>
+  </div>
+</div>
+
+<div class="card ac-green">
+  <div class="ch"><div class="ci">🏛</div><span class="ct">Architecture Tests</span></div>
+  <div class="cb">
+    <div class="tip tip-good"><span class="tip-icon">✅</span>Architecture tests enforce structural rules across your codebase automatically.</div>
+    <pre><span class="c">// tests/ArchTest.php — enforce architecture rules</span>
+
+<span class="c">// Models must not use facades</span>
+<span class="f">arch</span>(<span class="s">'models'</span>)
+    -><span class="f">expect</span>(<span class="s">'App\Models'</span>)
+    -><span class="f">not</span>-><span class="f">toUse</span>([<span class="s">'Illuminate\Support\Facades'</span>]);
+
+<span class="c">// Controllers should extend base Controller</span>
+<span class="f">arch</span>()<span class="f">->expect</span>(<span class="s">'App\Http\Controllers'</span>)
+    -><span class="f">toExtend</span>(<span class="s">'App\Http\Controllers\Controller'</span>)
+    -><span class="f">ignoring</span>(<span class="s">'App\Http\Controllers\Controller'</span>);
+
+<span class="c">// Jobs must implement ShouldQueue</span>
+<span class="f">arch</span>()-><span class="f">expect</span>(<span class="s">'App\Jobs'</span>)
+    -><span class="f">toImplement</span>(<span class="s">'Illuminate\Contracts\Queue\ShouldQueue'</span>);
+
+<span class="c">// No debugging helpers in production code</span>
+<span class="f">arch</span>()-><span class="f">expect</span>(<span class="s">'App'</span>)
+    -><span class="f">not</span>-><span class="f">toUse</span>([<span class="s">'dd'</span>, <span class="s">'dump'</span>, <span class="s">'var_dump'</span>, <span class="s">'ray'</span>]);
+
+<span class="c">// Strict types everywhere</span>
+<span class="f">arch</span>()-><span class="f">expect</span>(<span class="s">'App'</span>)-><span class="f">toUseStrictTypes</span>();
+
+<span class="c">// Preset — run common checks instantly</span>
+<span class="f">arch</span>()-><span class="f">preset</span>()-><span class="f">laravel</span>();
+<span class="f">arch</span>()-><span class="f">preset</span>()-><span class="f">security</span>();</pre>
+  </div>
+</div>
+
+<div class="card ac-teal">
+  <div class="ch"><div class="ci">🎭</div><span class="ct">Advanced Mocking &amp; Spies</span></div>
+  <div class="cb">
+    <pre><span class="c">// Partial mock — only mock specific methods</span>
+<span class="v">$mock</span> = <span class="v">$this</span>-><span class="f">partialMock</span>(<span class="cl">StripeGateway</span>::<span class="k">class</span>, <span class="k">function</span> (<span class="cl">MockInterface</span> <span class="v">$mock</span>) {
+    <span class="v">$mock</span>-><span class="f">shouldReceive</span>(<span class="s">'charge'</span>)-><span class="f">once</span>()-><span class="f">andReturn</span>(<span class="n">true</span>);
+    <span class="c">// other methods still call real implementation</span>
+});
+
+<span class="c">// Spy — records calls, then assert after</span>
+<span class="v">$spy</span> = <span class="v">$this</span>-><span class="f">spy</span>(<span class="cl">Mailer</span>::<span class="k">class</span>);
+<span class="c">// ... run action ...</span>
+<span class="v">$spy</span>-><span class="f">shouldHaveReceived</span>(<span class="s">'send'</span>)-><span class="f">once</span>();
+
+<span class="c">// Time travel — freeze or move time</span>
+<span class="v">$this</span>-><span class="f">travelTo</span>(<span class="f">now</span>()-><span class="f">addDays</span>(<span class="n">7</span>));
+<span class="v">$this</span>-><span class="f">travelBack</span>();
+<span class="v">$this</span>-><span class="f">freeze</span>(); <span class="c">// Pest: freeze time</span>
+
+<span class="c">// Fake Storage + verify file exists</span>
+<span class="cl">Storage</span>::<span class="f">fake</span>(<span class="s">'s3'</span>);
+<span class="v">$this</span>-><span class="f">post</span>(<span class="s">'/upload'</span>, [<span class="s">'file'</span> => <span class="cl">UploadedFile</span>::<span class="f">fake</span>()-><span class="f">image</span>(<span class="s">'photo.jpg'</span>)]);
+<span class="cl">Storage</span>::<span class="f">disk</span>(<span class="s">'s3'</span>)-><span class="f">assertExists</span>(<span class="s">'avatars/photo.jpg'</span>);
+
+<span class="c">// Fake HTTP responses</span>
+<span class="cl">Http</span>::<span class="f">fake</span>([
+    <span class="s">'api.stripe.com/*'</span>    => <span class="cl">Http</span>::<span class="f">response</span>([<span class="s">'id'</span> => <span class="s">'ch_123'</span>], <span class="n">200</span>),
+    <span class="s">'api.openai.com/*'</span>    => <span class="cl">Http</span>::<span class="f">response</span>([<span class="s">'error'</span> => <span class="s">'timeout'</span>], <span class="n">408</span>),
+    <span class="s">'*'</span>                   => <span class="cl">Http</span>::<span class="f">response</span>(<span class="s">'fallback'</span>, <span class="n">200</span>),
+]);</pre>
+  </div>
+</div>
+
+<div class="card ac-teal">
+  <div class="ch"><div class="ci">🌐</div><span class="ct">Browser Tests — Dusk</span></div>
+  <div class="cb">
+    <pre><span class="at">composer require laravel/dusk --dev
+php artisan dusk:install
+php artisan dusk</span>
+
+<span class="k">class</span> <span class="cl">LoginTest</span> <span class="k">extends</span> <span class="cl">DuskTestCase</span>
+{
+    <span class="k">public function</span> <span class="f">test_user_can_login</span>(): <span class="k">void</span>
+    {
+        <span class="v">$user</span> = <span class="cl">User</span>::<span class="f">factory</span>()-><span class="f">create</span>();
+
+        <span class="v">$this</span>-><span class="f">browse</span>(<span class="k">function</span> (<span class="cl">Browser</span> <span class="v">$browser</span>) <span class="k">use</span> (<span class="v">$user</span>) {
+            <span class="v">$browser</span>-><span class="f">visit</span>(<span class="s">'/login'</span>)
+                    -><span class="f">type</span>(<span class="s">'email'</span>, <span class="v">$user</span>->email)
+                    -><span class="f">type</span>(<span class="s">'password'</span>, <span class="s">'password'</span>)
+                    -><span class="f">press</span>(<span class="s">'Login'</span>)
+                    -><span class="f">assertPathIs</span>(<span class="s">'/dashboard'</span>)
+                    -><span class="f">assertSee</span>(<span class="s">'Welcome'</span>);
+        });
+    }
+}
+
+<span class="c">// Useful Dusk methods</span>
+<span class="c">// ->click('#btn') ->check('agree') ->select('role','admin')</span>
+<span class="c">// ->waitFor('.modal') ->waitUntilMissing('.spinner')</span>
+<span class="c">// ->assertVue('message', 'Hello', '@component')</span>
+<span class="c">// ->screenshot('debug') ->pause(1000)</span>
+<span class="c">// ->loginAs($user) ->logout()</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DESIGN PATTERNS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="patterns" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(244,114,182,.1);color:var(--pink);">🏛</div>
+  <div><div class="sh-title">Design Patterns &amp; Best Practices<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Repository, Action, Service, DTO, Pipeline patterns</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-pink">
+  <div class="ch"><div class="ci">📦</div><span class="ct">Action Pattern</span></div>
+  <div class="cb">
+    <div class="tip tip-good"><span class="tip-icon">💡</span>Actions are single-responsibility classes — one action does one thing. Replaces bloated controllers and services.</div>
+    <pre><span class="c">// app/Actions/Posts/CreatePost.php</span>
+<span class="k">class</span> <span class="cl">CreatePost</span>
+{
+    <span class="k">public function</span> <span class="f">__construct</span>(
+        <span class="k">private readonly</span> <span class="cl">PostRepository</span> <span class="v">$posts</span>,
+        <span class="k">private readonly</span> <span class="cl">TagService</span>     <span class="v">$tags</span>,
+    ) {}
+
+    <span class="k">public function</span> <span class="f">handle</span>(<span class="cl">User</span> <span class="v">$user</span>, <span class="cl">CreatePostData</span> <span class="v">$data</span>): <span class="cl">Post</span>
+    {
+        <span class="v">$post</span> = <span class="v">$this</span>->posts-><span class="f">create</span>([
+            <span class="s">'title'</span>   => <span class="v">$data</span>->title,
+            <span class="s">'body'</span>    => <span class="v">$data</span>->body,
+            <span class="s">'user_id'</span> => <span class="v">$user</span>->id,
+            <span class="s">'slug'</span>    => <span class="cl">Str</span>::<span class="f">slug</span>(<span class="v">$data</span>->title),
+        ]);
+
+        <span class="v">$this</span>->tags-><span class="f">syncTagsForPost</span>(<span class="v">$post</span>, <span class="v">$data</span>->tags);
+        <span class="cl">PostCreated</span>::<span class="f">dispatch</span>(<span class="v">$post</span>);
+        <span class="k">return</span> <span class="v">$post</span>;
+    }
+}
+
+<span class="c">// In Controller (thin — no business logic)</span>
+<span class="k">public function</span> <span class="f">store</span>(<span class="cl">StorePostRequest</span> <span class="v">$req</span>, <span class="cl">CreatePost</span> <span class="v">$action</span>): <span class="cl">JsonResponse</span>
+{
+    <span class="v">$post</span> = <span class="v">$action</span>-><span class="f">handle</span>(<span class="v">$req</span>-><span class="f">user</span>(), <span class="cl">CreatePostData</span>::<span class="f">from</span>(<span class="v">$req</span>-><span class="f">validated</span>()));
+    <span class="k">return</span> <span class="k">new</span> <span class="cl">PostResource</span>(<span class="v">$post</span>);
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-pink">
+  <div class="ch"><div class="ci">🗄</div><span class="ct">Repository Pattern</span></div>
+  <div class="cb">
+    <pre><span class="c">// Interface — swap implementations easily</span>
+<span class="k">interface</span> <span class="cl">PostRepositoryInterface</span>
+{
+    <span class="k">public function</span> <span class="f">find</span>(<span class="k">int</span> <span class="v">$id</span>): <span class="cl">Post</span>;
+    <span class="k">public function</span> <span class="f">published</span>(<span class="k">int</span> <span class="v">$perPage</span> = <span class="n">15</span>): <span class="cl">LengthAwarePaginator</span>;
+    <span class="k">public function</span> <span class="f">create</span>(<span class="k">array</span> <span class="v">$data</span>): <span class="cl">Post</span>;
+}
+
+<span class="c">// Eloquent implementation</span>
+<span class="k">class</span> <span class="cl">EloquentPostRepository</span> <span class="k">implements</span> <span class="cl">PostRepositoryInterface</span>
+{
+    <span class="k">public function</span> <span class="f">published</span>(<span class="k">int</span> <span class="v">$perPage</span> = <span class="n">15</span>): <span class="cl">LengthAwarePaginator</span> {
+        <span class="k">return</span> <span class="cl">Post</span>::<span class="f">published</span>()-><span class="f">with</span>(<span class="s">'user'</span>)-><span class="f">latest</span>()-><span class="f">paginate</span>(<span class="v">$perPage</span>);
+    }
+}
+
+<span class="c">// Bind in AppServiceProvider</span>
+<span class="v">$this</span>->app-><span class="f">bind</span>(<span class="cl">PostRepositoryInterface</span>::<span class="k">class</span>, <span class="cl">EloquentPostRepository</span>::<span class="k">class</span>);
+
+<span class="c">// Switch to cached version for production</span>
+<span class="k">if</span> (<span class="f">app</span>()-><span class="f">isProduction</span>()) {
+    <span class="v">$this</span>->app-><span class="f">bind</span>(<span class="cl">PostRepositoryInterface</span>::<span class="k">class</span>, <span class="cl">CachedPostRepository</span>::<span class="k">class</span>);
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🧾</div><span class="ct">DTOs &amp; Data Classes</span></div>
+  <div class="cb">
+    <div class="tip tip-info"><span class="tip-icon">💡</span>DTOs (Data Transfer Objects) make data flow explicit and type-safe — no more <code>$request->all()</code> magic arrays.</div>
+    <pre><span class="c">// PHP 8.x readonly properties (perfect for DTOs)</span>
+<span class="k">readonly class</span> <span class="cl">CreatePostData</span>
+{
+    <span class="k">public function</span> __<span class="f">construct</span>(
+        <span class="k">public</span> <span class="k">string</span>  <span class="v">$title</span>,
+        <span class="k">public</span> <span class="k">string</span>  <span class="v">$body</span>,
+        <span class="k">public</span> <span class="k">bool</span>    <span class="v">$published</span>     = <span class="n">false</span>,
+        <span class="k">public</span> <span class="k">array</span>   <span class="v">$tags</span>          = [],
+        <span class="k">public</span> ?<span class="k">string</span> <span class="v">$publishAt</span>     = <span class="n">null</span>,
+    ) {}
+
+    <span class="k">public static function</span> <span class="f">from</span>(<span class="k">array</span> <span class="v">$data</span>): <span class="k">static</span>
+    {
+        <span class="k">return new static</span>(
+            title:     <span class="v">$data</span>[<span class="s">'title'</span>],
+            body:      <span class="v">$data</span>[<span class="s">'body'</span>],
+            published: <span class="v">$data</span>[<span class="s">'published'</span>] ?? <span class="n">false</span>,
+            tags:      <span class="v">$data</span>[<span class="s">'tags'</span>]       ?? [],
+        );
+    }
+}
+
+<span class="c">// In Job — serializes properly due to readonly</span>
+<span class="k">class</span> <span class="cl">CreatePostJob</span> <span class="k">implements</span> <span class="cl">ShouldQueue</span> {
+    <span class="k">public function</span> __<span class="f">construct</span>(<span class="k">public readonly</span> <span class="cl">CreatePostData</span> <span class="v">$data</span>) {}
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🔧</div><span class="ct">Pipeline Pattern</span></div>
+  <div class="cb">
+    <div class="tip tip-info"><span class="tip-icon">💡</span>Pipelines let you pass an object through a series of stages — like middleware but for business logic.</div>
+    <pre><span class="k">use</span> <span class="cl">Illuminate\Pipeline\Pipeline</span>;
+
+<span class="c">// Define pipe stages</span>
+<span class="k">class</span> <span class="cl">ValidateOrder</span> {
+    <span class="k">public function</span> <span class="f">handle</span>(<span class="cl">Order</span> <span class="v">$order</span>, <span class="cl">Closure</span> <span class="v">$next</span>): <span class="cl">Order</span>
+    { <span class="v">$order</span>-><span class="f">validate</span>(); <span class="k">return</span> <span class="v">$next</span>(<span class="v">$order</span>); }
+}
+
+<span class="k">class</span> <span class="cl">ApplyDiscount</span> {
+    <span class="k">public function</span> <span class="f">handle</span>(<span class="cl">Order</span> <span class="v">$order</span>, <span class="cl">Closure</span> <span class="v">$next</span>): <span class="cl">Order</span>
+    { <span class="v">$order</span>-><span class="f">applyDiscount</span>(); <span class="k">return</span> <span class="v">$next</span>(<span class="v">$order</span>); }
+}
+
+<span class="c">// Run the pipeline</span>
+<span class="v">$result</span> = <span class="f">app</span>(<span class="cl">Pipeline</span>::<span class="k">class</span>)
+    -><span class="f">send</span>(<span class="v">$order</span>)
+    -><span class="f">through</span>([
+        <span class="cl">ValidateOrder</span>::<span class="k">class</span>,
+        <span class="cl">ApplyDiscount</span>::<span class="k">class</span>,
+        <span class="cl">ChargeCustomer</span>::<span class="k">class</span>,
+        <span class="cl">SendConfirmation</span>::<span class="k">class</span>,
+    ])
+    -><span class="f">thenReturn</span>(); <span class="c">// returns result</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PERFORMANCE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="perf" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(77,255,180,.1);color:var(--green);">⚡</div>
+  <div><div class="sh-title">Performance Optimization<span class="tag tag-perf">Performance</span></div>
+  <div class="sh-sub">Caching strategies, Octane, DB indexing, query optimization</div></div>
+</div>
+<div class="grid grid-3">
+
+<div class="card ac-green">
+  <div class="ch"><div class="ci">🚀</div><span class="ct">Production Optimizations</span></div>
+  <div class="cb">
+    <pre><span class="c">// Cache everything for production deploy</span>
+<span class="at">php artisan config:cache     # config files → single file
+php artisan route:cache      # routes → single file
+php artisan view:cache       # compile all Blade views
+php artisan event:cache      # event→listener map
+php artisan icons:cache      # (if using icon packages)
+php artisan optimize         # runs all of the above</span>
+
+<span class="c">// Clear all caches</span>
+<span class="at">php artisan optimize:clear</span>
+
+<span class="c">// OPcache — PHP-level (php.ini)</span>
+<span class="c">; opcache.enable=1</span>
+<span class="c">; opcache.memory_consumption=256</span>
+<span class="c">; opcache.max_accelerated_files=20000</span>
+<span class="c">; opcache.validate_timestamps=0  ← disable in prod</span></pre>
+  </div>
+</div>
+
+<div class="card ac-teal">
+  <div class="ch"><div class="ci">🏎</div><span class="ct">Laravel Octane</span></div>
+  <div class="cb">
+    <pre><span class="c">// Octane: keep app in memory between requests (10-100x faster)</span>
+<span class="at">composer require laravel/octane
+php artisan octane:install  # choose: Swoole or FrankenPHP
+php artisan octane:start --server=swoole --workers=4</span>
+
+<span class="c">// Octane Gotchas — avoid state in singletons</span>
+<span class="c">// BAD: singleton holds per-request state</span>
+<span class="v">$this</span>->app-><span class="f">singleton</span>(<span class="cl">Counter</span>::<span class="k">class</span>, <span class="k">fn</span>() => <span class="k">new</span> <span class="cl">Counter</span>());
+
+<span class="c">// GOOD: scoped — fresh per request</span>
+<span class="v">$this</span>->app-><span class="f">scoped</span>(<span class="cl">Counter</span>::<span class="k">class</span>, <span class="k">fn</span>() => <span class="k">new</span> <span class="cl">Counter</span>());
+
+<span class="c">// Concurrent tasks in Octane</span>
+<span class="k">use</span> <span class="cl">Laravel\Octane\Facades\Octane</span>;
+[<span class="v">$users</span>, <span class="v">$posts</span>] = <span class="cl">Octane</span>::<span class="f">concurrently</span>([
+    <span class="k">fn</span>() => <span class="cl">User</span>::<span class="f">count</span>(),
+    <span class="k">fn</span>() => <span class="cl">Post</span>::<span class="f">count</span>(),
+]);</pre>
+  </div>
+</div>
+
+<div class="card ac-blue">
+  <div class="ch"><div class="ci">🗃</div><span class="ct">Cache Strategies</span></div>
+  <div class="cb">
+    <pre><span class="c">// Cache-aside pattern</span>
+<span class="k">function</span> <span class="f">getUser</span>(<span class="k">int</span> <span class="v">$id</span>): <span class="cl">User</span>
+{
+    <span class="k">return</span> <span class="cl">Cache</span>::<span class="f">remember</span>(<span class="s">"user.{$id}"</span>, <span class="n">3600</span>, <span class="k">fn</span>() =>
+        <span class="cl">User</span>::<span class="f">with</span>(<span class="s">'profile'</span>)-><span class="f">findOrFail</span>(<span class="v">$id</span>)
+    );
+}
+
+<span class="c">// Cache forever + manual invalidation</span>
+<span class="cl">Cache</span>::<span class="f">rememberForever</span>(<span class="s">'config.settings'</span>, <span class="k">fn</span>() => <span class="cl">Settings</span>::<span class="f">all</span>());
+<span class="cl">Cache</span>::<span class="f">forget</span>(<span class="s">'config.settings'</span>); <span class="c">// on settings update</span>
+
+<span class="c">// Tag-based invalidation (Redis)</span>
+<span class="cl">Cache</span>::<span class="f">tags</span>([<span class="s">'user'</span>, <span class="s">"user:{$user->id}"</span>])
+    -><span class="f">remember</span>(<span class="s">'posts'</span>, <span class="n">3600</span>, <span class="k">fn</span>() => <span class="v">$user</span>-><span class="f">posts</span>());
+
+<span class="c">// Invalidate all user cache</span>
+<span class="cl">Cache</span>::<span class="f">tags</span>(<span class="s">"user:{$user->id}"</span>)-><span class="f">flush</span>();
+
+<span class="c">// HTTP response caching</span>
+<span class="k">return</span> <span class="f">response</span>(<span class="v">$content</span>)
+    -><span class="f">header</span>(<span class="s">'Cache-Control'</span>, <span class="s">'public, max-age=3600'</span>)
+    -><span class="f">header</span>(<span class="s">'ETag'</span>, <span class="f">md5</span>(<span class="v">$content</span>));</pre>
+  </div>
+</div>
+
+<div class="card ac-yellow">
+  <div class="ch"><div class="ci">🗂</div><span class="ct">Database Indexes &amp; Query Tips</span></div>
+  <div class="cb">
+    <pre><span class="c">// Add indexes in migrations</span>
+<span class="v">$table</span>-><span class="f">index</span>(<span class="s">'email'</span>);
+<span class="v">$table</span>-><span class="f">index</span>([<span class="s">'user_id'</span>, <span class="s">'created_at'</span>]);  <span class="c">// composite</span>
+<span class="v">$table</span>-><span class="f">unique</span>([<span class="s">'email'</span>, <span class="s">'tenant_id'</span>]);
+<span class="v">$table</span>-><span class="f">fullText</span>([<span class="s">'title'</span>, <span class="s">'body'</span>]);     <span class="c">// full-text search</span>
+
+<span class="c">// select() — only get columns you need</span>
+<span class="cl">Post</span>::<span class="f">select</span>([<span class="s">'id'</span>, <span class="s">'title'</span>, <span class="s">'user_id'</span>])-><span class="f">get</span>();
+
+<span class="c">// Use DB::listen() to debug slow queries</span>
+<span class="cl">DB</span>::<span class="f">listen</span>(<span class="k">function</span> (<span class="v">$q</span>) {
+    <span class="k">if</span> (<span class="v">$q</span>->time > <span class="n">100</span>) {  <span class="c">// > 100ms</span>
+        <span class="cl">Log</span>::<span class="f">warning</span>(<span class="s">'Slow query'</span>, [<span class="s">'sql'</span> => <span class="v">$q</span>->sql, <span class="s">'ms'</span> => <span class="v">$q</span>->time]);
+    }
+});
+
+<span class="c">// Explain query plan</span>
+<span class="cl">Post</span>::<span class="f">where</span>(<span class="s">'user_id'</span>, <span class="n">1</span>)-><span class="f">explain</span>()-><span class="f">dd</span>();
+
+<span class="c">// Use value() / pluck() instead of get() for single values</span>
+<span class="cl">Post</span>::<span class="f">where</span>(<span class="s">'slug'</span>, <span class="s">'hello'</span>)-><span class="f">value</span>(<span class="s">'id'</span>);   <span class="c">// faster than ->first()->id</span>
+<span class="cl">Post</span>::<span class="f">pluck</span>(<span class="s">'id'</span>);                            <span class="c">// just an array of ids</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- API DESIGN DEEP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="api" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(34,211,238,.1);color:var(--cyan);">🌐</div>
+  <div><div class="sh-title">API Design — Advanced Patterns<span class="tag tag-adv">Advanced</span></div>
+  <div class="sh-sub">Versioning, conditional responses, problem details, API resources</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-cyan">
+  <div class="ch"><div class="ci">📌</div><span class="ct">API Versioning</span></div>
+  <div class="cb">
+    <pre><span class="c">// routes/api.php — Route prefix versioning</span>
+<span class="cl">Route</span>::<span class="f">prefix</span>(<span class="s">'v1'</span>)-><span class="f">name</span>(<span class="s">'v1.'</span>)-><span class="f">group</span>(<span class="f">base_path</span>(<span class="s">'routes/api_v1.php'</span>));
+<span class="cl">Route</span>::<span class="f">prefix</span>(<span class="s">'v2'</span>)-><span class="f">name</span>(<span class="s">'v2.'</span>)-><span class="f">group</span>(<span class="f">base_path</span>(<span class="s">'routes/api_v2.php'</span>));
+
+<span class="c">// Header versioning (Accept header)</span>
+<span class="k">class</span> <span class="cl">ApiVersionMiddleware</span>
+{
+    <span class="k">public function</span> <span class="f">handle</span>(<span class="cl">Request</span> <span class="v">$request</span>, <span class="cl">Closure</span> <span class="v">$next</span>): <span class="cl">Response</span>
+    {
+        <span class="v">$version</span> = <span class="v">$request</span>-><span class="f">header</span>(<span class="s">'Accept-Version'</span>, <span class="s">'v1'</span>);
+        <span class="f">app</span>()-><span class="f">instance</span>(<span class="s">'api.version'</span>, <span class="v">$version</span>);
+        <span class="k">return</span> <span class="v">$next</span>(<span class="v">$request</span>);
+    }
+}
+
+<span class="c">// Versioned Resources</span>
+<span class="k">class</span> <span class="cl">PostResource</span> <span class="k">extends</span> <span class="cl">JsonResource</span> {
+    <span class="k">public function</span> <span class="f">toArray</span>(<span class="cl">Request</span> <span class="v">$req</span>): <span class="k">array</span> {
+        <span class="k">return</span> <span class="k">match</span> (<span class="f">app</span>(<span class="s">'api.version'</span>)) {
+            <span class="s">'v2'</span>    => <span class="v">$this</span>-><span class="f">toV2Array</span>(),
+            <span class="k">default</span> => <span class="v">$this</span>-><span class="f">toV1Array</span>(),
+        };
+    }
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-cyan">
+  <div class="ch"><div class="ci">🎯</div><span class="ct">Conditional Requests &amp; HATEOAS</span></div>
+  <div class="cb">
+    <pre><span class="c">// Conditional fields — resource only includes when loaded</span>
+<span class="k">public function</span> <span class="f">toArray</span>(<span class="cl">Request</span> <span class="v">$request</span>): <span class="k">array</span>
+{
+    <span class="k">return</span> [
+        <span class="s">'id'</span>       => <span class="v">$this</span>->id,
+        <span class="s">'title'</span>    => <span class="v">$this</span>->title,
+
+        <span class="c">// Only when relationship is loaded</span>
+        <span class="s">'author'</span>   => <span class="cl">UserResource</span>::<span class="f">make</span>(<span class="v">$this</span>-><span class="f">whenLoaded</span>(<span class="s">'user'</span>)),
+
+        <span class="c">// Only when pivot data is loaded</span>
+        <span class="s">'order'</span>    => <span class="v">$this</span>-><span class="f">whenPivotLoaded</span>(<span class="s">'post_tag'</span>, <span class="k">fn</span>() => <span class="v">$this</span>->pivot->order),
+
+        <span class="c">// Only for authenticated users</span>
+        <span class="s">'my_vote'</span>  => <span class="v">$this</span>-><span class="f">when</span>(<span class="v">$request</span>-><span class="f">user</span>(), <span class="k">fn</span>() =>
+            <span class="v">$this</span>->votes-><span class="f">where</span>(<span class="s">'user_id'</span>, <span class="v">$request</span>-><span class="f">user</span>()->id)-><span class="f">first</span>()),
+
+        <span class="c">// Only for admins</span>
+        <span class="s">'ip_addr'</span>  => <span class="v">$this</span>-><span class="f">when</span>(<span class="v">$request</span>-><span class="f">user</span>()?->isAdmin(), <span class="v">$this</span>->ip_address),
+
+        <span class="c">// Merge array conditionally</span>
+        <span class="v">$this</span>-><span class="f">mergeWhen</span>(<span class="v">$request</span>-><span class="f">has</span>(<span class="s">'include_stats'</span>), [
+            <span class="s">'views'</span> => <span class="v">$this</span>->views,
+            <span class="s">'likes'</span> => <span class="v">$this</span>->likes_count,
+        ]),
+
+        <span class="c">// HATEOAS links</span>
+        <span class="s">'links'</span> => [
+            <span class="s">'self'</span>     => <span class="f">route</span>(<span class="s">'api.posts.show'</span>,    <span class="v">$this</span>->id),
+            <span class="s">'comments'</span> => <span class="f">route</span>(<span class="s">'api.posts.comments'</span>, <span class="v">$this</span>->id),
+        ],
+    ];
+}</pre>
+  </div>
+</div>
+
+<div class="card ac-cyan span2">
+  <div class="ch"><div class="ci">⚠</div><span class="ct">API Error Handling — RFC 9457 Problem Details</span></div>
+  <div class="cb">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <div class="lbl">Custom Exception + Handler</div>
+        <pre><span class="c">// Custom domain exception</span>
+<span class="k">class</span> <span class="cl">InsufficientFundsException</span> <span class="k">extends</span> <span class="cl">RuntimeException</span>
+{
+    <span class="k">public function</span> __<span class="f">construct</span>(
+        <span class="k">public readonly float</span> <span class="v">$required</span>,
+        <span class="k">public readonly float</span> <span class="v">$balance</span>,
+    ) { <span class="k">parent</span>::__<span class="f">construct</span>(<span class="s">'Insufficient funds'</span>); }
+}
+
+<span class="c">// bootstrap/app.php — register handler</span>
+<span class="v">$exceptions</span>-><span class="f">render</span>(<span class="k">function</span> (<span class="cl">InsufficientFundsException</span> <span class="v">$e</span>, <span class="cl">Request</span> <span class="v">$req</span>) {
+    <span class="k">return</span> <span class="f">response</span>()-><span class="f">json</span>([
+        <span class="s">'type'</span>     => <span class="s">'https://errors.example.com/insufficient-funds'</span>,
+        <span class="s">'title'</span>    => <span class="s">'Insufficient Funds'</span>,
+        <span class="s">'status'</span>   => <span class="n">422</span>,
+        <span class="s">'required'</span> => <span class="v">$e</span>->required,
+        <span class="s">'balance'</span>  => <span class="v">$e</span>->balance,
+    ], <span class="n">422</span>, [<span class="s">'Content-Type'</span> => <span class="s">'application/problem+json'</span>]);
+});</pre>
+      </div>
+      <div>
+        <div class="lbl">Consistent Error Response Helper</div>
+        <pre><span class="c">// ApiResponse trait for controllers</span>
+<span class="k">trait</span> <span class="cl">ApiResponses</span>
+{
+    <span class="k">protected function</span> <span class="f">success</span>(<span class="v">$data</span>, <span class="k">int</span> <span class="v">$status</span> = <span class="n">200</span>): <span class="cl">JsonResponse</span> {
+        <span class="k">return</span> <span class="f">response</span>()-><span class="f">json</span>([
+            <span class="s">'data'</span>    => <span class="v">$data</span>,
+            <span class="s">'success'</span> => <span class="n">true</span>,
+        ], <span class="v">$status</span>);
+    }
+
+    <span class="k">protected function</span> <span class="f">error</span>(<span class="k">string</span> <span class="v">$message</span>, <span class="k">int</span> <span class="v">$status</span>): <span class="cl">JsonResponse</span> {
+        <span class="k">return</span> <span class="f">response</span>()-><span class="f">json</span>([
+            <span class="s">'error'</span>   => <span class="v">$message</span>,
+            <span class="s">'success'</span> => <span class="n">false</span>,
+            <span class="s">'status'</span>  => <span class="v">$status</span>,
+        ], <span class="v">$status</span>);
+    }
+}
+
+<span class="c">// Validation error format</span>
+<span class="c">// Default: 422 with errors.field[] array</span>
+<span class="c">// Customize in Handler: stopOnFirstFailure()</span>
+<span class="c">// or FormRequest::failedValidation()</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- REAL-TIME -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="realtime" class="section-id">
+<div class="sh">
+  <div class="sh-icon" style="background:rgba(255,140,66,.1);color:var(--orange);">⚡</div>
+  <div><div class="sh-title">Real-time &amp; Advanced Features<span class="tag tag-new">Laravel 13</span></div>
+  <div class="sh-sub">Livewire, Concurrency, Pennant feature flags, Pulse monitoring</div></div>
+</div>
+<div class="grid">
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🔴</div><span class="ct">Concurrency — Parallel Execution</span></div>
+  <div class="cb">
+    <div class="tip tip-new" style="background:rgba(255,140,66,.07);border:1px solid rgba(255,140,66,.2);color:#cc7030;"><span class="tip-icon">✨</span>New in Laravel 11+. Run closures concurrently using forks — no async/await needed.</div>
+    <pre><span class="k">use</span> <span class="cl">Illuminate\Support\Facades\Concurrency</span>;
+
+<span class="c">// Run tasks in parallel (uses process forking)</span>
+[<span class="v">$users</span>, <span class="v">$posts</span>, <span class="v">$stats</span>] = <span class="cl">Concurrency</span>::<span class="f">run</span>([
+    <span class="k">fn</span>() => <span class="cl">User</span>::<span class="f">active</span>()-><span class="f">count</span>(),
+    <span class="k">fn</span>() => <span class="cl">Post</span>::<span class="f">published</span>()-><span class="f">count</span>(),
+    <span class="k">fn</span>() => <span class="cl">Analytics</span>::<span class="f">todaySummary</span>(),
+]);
+
+<span class="c">// Defer — run after response is sent (background)</span>
+<span class="k">use</span> <span class="cl">Illuminate\Support\Defer</span>;
+
+<span class="cl">Defer</span>::<span class="f">run</span>(<span class="k">fn</span>() => <span class="cl">Analytics</span>::<span class="f">track</span>(<span class="s">'page_view'</span>, <span class="v">$request</span>));
+<span class="c">// User gets response immediately, tracking runs after</span>
+
+<span class="c">// Or use the helper function</span>
+<span class="f">defer</span>(<span class="k">fn</span>() => <span class="cl">Log</span>::<span class="f">info</span>(<span class="s">'Request completed'</span>));</pre>
+  </div>
+</div>
+
+<div class="card ac-orange">
+  <div class="ch"><div class="ci">🚩</div><span class="ct">Pennant — Feature Flags</span></div>
+  <div class="cb">
+    <pre><span class="at">composer require laravel/pennant</span>
+
+<span class="c">// Define features (AppServiceProvider)</span>
+<span class="cl">Feature</span>::<span class="f">define</span>(<span class="s">'new-dashboard'</span>, <span class="k">function</span> (<span class="cl">User</span> <span class="v">$user</span>) {
+    <span class="k">return</span> <span class="v">$user</span>->isInBeta();
+});
+
+<span class="c">// Percentage rollout</span>
+<span class="cl">Feature</span>::<span class="f">define</span>(<span class="s">'dark-mode'</span>, <span class="k">fn</span>(<span class="cl">User</span> <span class="v">$u</span>) =>
+    <span class="cl">Feature</span>::<span class="f">lottery</span>(<span class="n">0.1</span>)  <span class="c">// 10% of users</span>
+);
+
+<span class="c">// Check features</span>
+<span class="cl">Feature</span>::<span class="f">active</span>(<span class="s">'new-dashboard'</span>);        <span class="c">// current user</span>
+<span class="cl">Feature</span>::<span class="f">for</span>(<span class="v">$user</span>)-><span class="f">active</span>(<span class="s">'dark-mode'</span>);
+<span class="cl">Feature</span>::<span class="f">allAreActive</span>([<span class="s">'feat-a'</span>, <span class="s">'feat-b'</span>]);
+<span class="cl">Feature</span>::<span class="f">someAreActive</span>([<span class="s">'feat-a'</span>, <span class="s">'feat-b'</span>]);
+
+<span class="c">// In Blade</span>
+@<span class="f">feature</span>(<span class="s">'new-dashboard'</span>)
+    <span class="k">&lt;x-new-dashboard /&gt;</span>
+@<span class="f">else</span>
+    <span class="k">&lt;x-old-dashboard /&gt;</span>
+@<span class="f">endfeature</span>
+
+<span class="c">// Force enable/disable for testing</span>
+<span class="cl">Feature</span>::<span class="f">activate</span>(<span class="s">'new-dashboard'</span>);
+<span class="cl">Feature</span>::<span class="f">deactivate</span>(<span class="s">'new-dashboard'</span>);</pre>
+  </div>
+</div>
+
+<div class="card ac-red">
+  <div class="ch"><div class="ci">📊</div><span class="ct">Pulse — App Monitoring</span></div>
+  <div class="cb">
+    <pre><span class="at">composer require laravel/pulse
+php artisan vendor:publish --provider="Laravel\Pulse\PulseServiceProvider"
+php artisan migrate</span>
+
+<span class="c">// Access dashboard at /pulse (guard configurable)</span>
+
+<span class="c">// What Pulse tracks automatically:</span>
+<span class="c">// • Slow requests + queries (configurable threshold)</span>
+<span class="c">// • Failed queue jobs</span>
+<span class="c">// • Cache hit/miss rates</span>
+<span class="c">// • Exception counts</span>
+<span class="c">// • User activity (most active users)</span>
+<span class="c">// • Slow outgoing HTTP requests</span>
+
+<span class="c">// Custom Pulse entries</span>
+<span class="k">use</span> <span class="cl">Laravel\Pulse\Facades\Pulse</span>;
+
+<span class="cl">Pulse</span>::<span class="f">record</span>(<span class="s">'search'</span>, <span class="v">$query</span>, <span class="n">$duration</span>)-><span class="f">count</span>()-><span class="f">slowest</span>();
+
+<span class="c">// Gate in config/pulse.php</span>
+<span class="s">'middleware'</span> => [<span class="s">'auth'</span>, <span class="s">'can:viewPulse'</span>],</pre>
+  </div>
+</div>
+
+<div class="card ac-purple">
+  <div class="ch"><div class="ci">🔍</div><span class="ct">Scout — Full-Text Search</span></div>
+  <div class="cb">
+    <pre><span class="at">composer require laravel/scout
+php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"</span>
+
+<span class="c">// Add Searchable to model</span>
+<span class="k">class</span> <span class="cl">Post</span> <span class="k">extends</span> <span class="cl">Model</span> {
+    <span class="k">use</span> <span class="cl">Searchable</span>;
+
+    <span class="c">// Customize indexed data</span>
+    <span class="k">public function</span> <span class="f">toSearchableArray</span>(): <span class="k">array</span> {
+        <span class="k">return</span> [
+            <span class="s">'id'</span>    => <span class="v">$this</span>->id,
+            <span class="s">'title'</span> => <span class="v">$this</span>->title,
+            <span class="s">'body'</span>  => strip_tags(<span class="v">$this</span>->body),
+            <span class="s">'tags'</span>  => <span class="v">$this</span>->tags-><span class="f">pluck</span>(<span class="s">'name'</span>),
+        ];
+    }
+}
+
+<span class="c">// Search</span>
+<span class="cl">Post</span>::<span class="f">search</span>(<span class="s">'laravel framework'</span>)-><span class="f">get</span>();
+<span class="cl">Post</span>::<span class="f">search</span>(<span class="s">'tutorial'</span>)-><span class="f">paginate</span>(<span class="n">15</span>);
+<span class="cl">Post</span>::<span class="f">search</span>(<span class="s">'php'</span>)-><span class="f">where</span>(<span class="s">'published'</span>, <span class="n">true</span>)-><span class="f">get</span>();
+
+<span class="c">// Drivers: meilisearch, algolia, typesense, database</span>
+<span class="at">SCOUT_DRIVER=meilisearch
+MEILISEARCH_HOST=http://localhost:7700</span>
+
+<span class="c">// Bulk index</span>
+<span class="at">php artisan scout:import "App\Models\Post"</span></pre>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top:60px;padding-top:24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#FF2D20,#ff7043);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;">L</div>
+    <span style="color:var(--muted);font-size:12px;">Laravel 13.x Advanced Deep Dive • PHP 8.4+ • Pest &amp; PHPUnit</span>
+  </div>
+  <div style="display:flex;gap:16px;">
+    <a href="https://laravel.com/docs/13.x" target="_blank" style="color:var(--teal);font-size:12px;text-decoration:none;">Official Docs ↗</a>
+    <a href="https://pestphp.com" target="_blank" style="color:var(--muted2);font-size:12px;text-decoration:none;">Pest PHP ↗</a>
+    <a href="https://laravel.com/docs/13.x/horizon" target="_blank" style="color:var(--muted2);font-size:12px;text-decoration:none;">Horizon ↗</a>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// Active nav on scroll
+const sections = document.querySelectorAll('.section-id');
+const navLinks = document.querySelectorAll('.nav a');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-60px 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
