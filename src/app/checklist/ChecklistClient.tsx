@@ -3,34 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChecklistTopicData } from './types';
-
-const STORAGE_KEY = 'skills_progress_v1';
-
-type ProgressMap = Record<string, Record<string, true>>;
-
-function safeParseProgress(raw: string | null): ProgressMap {
-  if (!raw) return {};
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return {};
-    const obj = parsed as Record<string, unknown>;
-    const result: ProgressMap = {};
-
-    for (const [topicSlug, value] of Object.entries(obj)) {
-      if (!value || typeof value !== 'object') continue;
-      const conceptMap = value as Record<string, unknown>;
-      const out: Record<string, true> = {};
-      for (const [conceptId, done] of Object.entries(conceptMap)) {
-        if (done === true) out[conceptId] = true;
-      }
-      if (Object.keys(out).length > 0) result[topicSlug] = out;
-    }
-
-    return result;
-  } catch {
-    return {};
-  }
-}
+import { useSkillsProgress } from '@/lib/useSkillsProgress';
 
 function isTypingTarget(target: EventTarget | null) {
   const el = target as HTMLElement | null;
@@ -39,26 +12,13 @@ function isTypingTarget(target: EventTarget | null) {
 }
 
 export default function ChecklistClient({ topics }: { topics: ChecklistTopicData[] }) {
-  const [progress, setProgress] = useState<ProgressMap>({});
+  const { progress, toggleConcept, clearProgress } = useSkillsProgress();
   const [search, setSearch] = useState('');
   const [onlyRemaining, setOnlyRemaining] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const searchRef = useRef<HTMLInputElement>(null);
-  const hasLoaded = useRef(false);
 
-  const searchTokens = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
-
-  useEffect(() => {
-    setProgress(safeParseProgress(localStorage.getItem(STORAGE_KEY)));
-    hasLoaded.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoaded.current) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    } catch {}
-  }, [progress]);
+  const searchTokens = useMemo(() => search.trim().toLowerCase().split(/\s+/).filter(Boolean), [search]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -126,36 +86,7 @@ export default function ChecklistClient({ topics }: { topics: ChecklistTopicData
         return { ...topic, sections };
       })
       .filter(Boolean) as ChecklistTopicData[];
-  }, [topics, searchTokens, onlyRemaining, progress, search]);
-
-  const toggleConcept = (topicSlug: string, conceptId: string) => {
-    setProgress((prev) => {
-      const next: ProgressMap = { ...prev };
-      const topicMap = { ...(next[topicSlug] ?? {}) };
-      const isDone = !!topicMap[conceptId];
-
-      if (isDone) {
-        delete topicMap[conceptId];
-      } else {
-        topicMap[conceptId] = true;
-      }
-
-      if (Object.keys(topicMap).length === 0) {
-        delete next[topicSlug];
-      } else {
-        next[topicSlug] = topicMap;
-      }
-
-      return next;
-    });
-  };
-
-  const clearProgress = () => {
-    setProgress({});
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
-  };
+  }, [topics, searchTokens, onlyRemaining, progress]);
 
   const toggleTopic = (slug: string) => setCollapsed((prev) => ({ ...prev, [slug]: !prev[slug] }));
 

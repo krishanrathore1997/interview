@@ -1,6 +1,14 @@
 import Link from 'next/link';
 import SkillConceptCard from '@/components/SkillConceptCard';
-import type { SkillPageContent } from '@/data/skills';
+import AIAgent from '@/components/AIAgent';
+import type { SkillPageContent, SkillTopic } from '@/data/skills';
+
+const deepDiveByTopic: Partial<Record<SkillTopic, string>> = {
+  Laravel: '/laravel-deep-dive.html',
+  'Next.js': '/nextjs-deep-dive.html',
+  React: '/react-js-deep-dive.html',
+  MySQL: '/sql-deep-dive.html',
+};
 
 const topicColors: Record<string, string> = {
   React: 'var(--clr-react)',
@@ -44,6 +52,7 @@ export default function SkillPageRenderer({ content }: Props) {
   const color = topicColors[content.topic] ?? 'var(--accent)';
   const q = encodeURIComponent(interviewSearchSeed[content.topic] ?? content.topic);
   const practiceHref = `/interview?q=${q}`;
+  const deepDiveHref = deepDiveByTopic[content.topic];
 
   const totalConcepts = content.sections.reduce((total, section) => total + section.concepts.length, 0);
   const totalQuestions = content.sections.reduce(
@@ -82,6 +91,17 @@ export default function SkillPageRenderer({ content }: Props) {
           >
             Practice Q&amp;A -&gt;
           </Link>
+          {deepDiveHref && (
+            <a
+              href={deepDiveHref}
+              target="_blank"
+              rel="noreferrer"
+              className="page-meta-item"
+              style={{ color: 'var(--text-link)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+            >
+              Advanced Deep Dive -&gt;
+            </a>
+          )}
           {content.docs.map((doc) => (
             <a
               key={doc.href}
@@ -117,6 +137,14 @@ export default function SkillPageRenderer({ content }: Props) {
             </div>
           </div>
         ))}
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <div className="section-title-row">
+          <h2>AI Interview Practice</h2>
+          <span className="text-secondary" style={{ fontSize: '0.8125rem' }}>Ask follow-ups or start a mock interview for {content.topic}.</span>
+        </div>
+        <AIAgent topic={content.topic} mode="interview" className="h-[min(70vh,520px)] min-h-[380px]" />
       </div>
     </div>
   );

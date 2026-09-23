@@ -34,6 +34,11 @@ export const systemDesign: SkillPageContent = {
               answer: 'Vertical scaling means a bigger machine. Horizontal scaling means more machines with load balancing. Horizontal scaling improves availability and throughput but requires stateless app design and shared state.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why is a stateless app server a prerequisite for easy horizontal scaling?',
+              answer: 'If a server keeps session or request state in its own memory, a load balancer routing a user\'s next request to a different instance won\'t find that state, breaking logins or in-progress work. Statelessness lets any instance handle any request, which is what makes safely adding or removing servers behind a load balancer possible.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -54,6 +59,11 @@ export const systemDesign: SkillPageContent = {
             {
               question: 'What is CAP theorem?',
               answer: 'In a partition, you must choose between consistency and availability. In practice, systems make different tradeoffs depending on the operation and user expectations.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'Give a concrete example of choosing availability over consistency.',
+              answer: 'A social post\'s like or comment count can show a slightly stale number during a network partition instead of failing the request outright. Users tolerate a momentarily wrong count far better than a broken page, so the system stays available and reconciles the exact count once the partition heals.',
               difficulty: 'Medium',
             },
           ],
@@ -85,6 +95,11 @@ export const systemDesign: SkillPageContent = {
               answer: 'CDN for static assets and cacheable GETs, then server/edge cache, then Redis/in-memory for hot data. Cache read-heavy expensive computations with TTLs + invalidation. Always measure hit rate and tail latency.',
               difficulty: 'Medium',
             },
+            {
+              question: 'What\'s the tradeoff of choosing a longer cache TTL?',
+              answer: 'A longer TTL means fewer origin or database hits and better performance, but also means users may see stale data for longer after an update. The right TTL balances how expensive a cache miss is against how quickly the underlying data actually needs to be reflected.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -106,6 +121,11 @@ export const systemDesign: SkillPageContent = {
             {
               question: 'How do you prevent cache stampedes?',
               answer: 'Use request coalescing/single-flight, stale-while-revalidate, jittered TTLs, and locks for hot keys. Measure hit rate and tail latency.',
+              difficulty: 'Hard',
+            },
+            {
+              question: 'What is "stale-while-revalidate" and why does it prevent a stampede?',
+              answer: 'Instead of blocking every request while recomputing an expired cache entry, you keep serving the old value immediately to all callers while exactly one background request refreshes it. A spike of concurrent requests on an expired key never turns into a spike of concurrent expensive recomputes.',
               difficulty: 'Hard',
             },
           ],
@@ -137,6 +157,11 @@ export const systemDesign: SkillPageContent = {
               answer: 'Replication lag. Users may not see their latest write if you read from a replica immediately after a write. Solve with read-your-writes routing to primary for critical flows.',
               difficulty: 'Hard',
             },
+            {
+              question: 'Why might an app deliberately read from the primary right after a write instead of a replica?',
+              answer: 'Replication lag means a replica might not have the just-written data yet. Reading from it immediately after a write — a "read-your-writes" flow — can show the user their own change as if it never happened. Routing that specific read to the primary guarantees they see it.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -153,6 +178,11 @@ export const systemDesign: SkillPageContent = {
             {
               question: 'How do you design pagination for a large API?',
               answer: 'Prefer cursor pagination with a stable sort key and a next-cursor token. Index the sort key. Offset is simple but slow/inconsistent at scale.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'Why does offset pagination break down on a large, actively-changing dataset?',
+              answer: 'OFFSET N forces the database to scan and discard the first N rows on every page request, which gets slower as N grows. If rows are inserted or deleted between page loads, the offset no longer lines up with a stable position, so users can see duplicate or skipped items.',
               difficulty: 'Medium',
             },
           ],
@@ -184,6 +214,11 @@ export const systemDesign: SkillPageContent = {
               answer: 'For background tasks (emails, image processing), smoothing spikes, and workflows that can be retried. It decouples request latency from processing time.',
               difficulty: 'Easy',
             },
+            {
+              question: 'What\'s the difference between at-least-once and exactly-once delivery, and why does it matter?',
+              answer: 'Most real message queues guarantee at-least-once delivery — a message can be redelivered if a worker crashes after processing but before acknowledging. True exactly-once delivery is extremely hard to guarantee end to end, so in practice you design jobs to be idempotent instead of relying on the queue to never redeliver.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -200,6 +235,11 @@ export const systemDesign: SkillPageContent = {
             {
               question: 'What is the outbox pattern and why use it?',
               answer: 'It ensures DB writes and event publication stay consistent by writing the event to an outbox table in the same transaction, then publishing asynchronously. It avoids lost messages.',
+              difficulty: 'Hard',
+            },
+            {
+              question: 'What problem does the outbox pattern solve that "commit, then publish" doesn\'t?',
+              answer: 'Committing the DB write and publishing an event as two separate steps means a crash in between either loses the event or fires it for a write that got rolled back. Writing the event to an outbox table inside the same transaction as the business write makes both succeed or fail together, and a separate relay worker publishes it reliably afterward.',
               difficulty: 'Hard',
             },
           ],
@@ -230,6 +270,11 @@ export const systemDesign: SkillPageContent = {
               question: 'How do you debug a production issue you can’t reproduce locally?',
               answer: 'Use observability: logs with request IDs, metrics (spikes in 5xx/p95), and traces to see bottlenecks. Compare environment/config/data differences. Add safe instrumentation behind a flag if needed.',
               difficulty: 'Hard',
+            },
+            {
+              question: 'Why alert on symptoms like error rate and latency instead of raw resource metrics like CPU?',
+              answer: 'High CPU doesn\'t necessarily mean users are affected — it might just mean the system is efficiently using its capacity. Alerting on symptoms that directly reflect user experience, like 5xx rate or p95 latency, avoids paging someone for a non-problem and keeps every alert tied to something a user could actually feel.',
+              difficulty: 'Medium',
             },
           ],
         },

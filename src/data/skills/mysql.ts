@@ -55,6 +55,16 @@ SELECT age FROM users WHERE email = 'bob@test.com';`,
               answer: 'Clustered index (PK) stores data in its leaf nodes. Non-Clustered index stores only a pointer to the PK, requiring two traversals unless it\'s a covering index.',
               difficulty: 'Hard'
             },
+            {
+              question: 'Why is choosing a UUID as a Primary Key considered bad practice in InnoDB?',
+              answer: 'UUIDs are random, so every insert lands in a random spot in the clustered B-tree instead of appending to the end, causing page splits and fragmentation. Since every secondary index stores the PK value, a wide random PK also bloats every other index on the table.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'What is a covering index and how does it avoid the double lookup?',
+              answer: 'A covering index includes every column the query needs in SELECT and WHERE. MySQL can then satisfy the whole query from the secondary index\'s own B-tree, skipping the second lookup into the clustered index to fetch the full row.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -93,6 +103,16 @@ INSERT INTO orders (id, total) VALUES (15, 100);`,
             {
               question: 'How do you identify and resolve a Deadlock in MySQL?',
               answer: 'Run "SHOW ENGINE INNODB STATUS". To resolve, ensure consistent table access order and keep transactions short.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'What\'s the difference between a Shared (S) lock and an Exclusive (X) lock?',
+              answer: 'A Shared lock lets multiple transactions read the same row concurrently but blocks writers. An Exclusive lock is held by one transaction for writing and blocks both readers and writers until it\'s released.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why do Gap Locks exist, and what problem do they prevent?',
+              answer: 'In REPEATABLE READ, gap locks lock the space between index records, not just the rows themselves, so other transactions can\'t insert new rows into that range. That\'s what stops phantom reads, where a repeated range query would otherwise return different rows within the same transaction.',
               difficulty: 'Hard'
             },
           ],
@@ -144,6 +164,16 @@ PARTITION BY RANGE (YEAR(log_date)) (
               answer: 'The database engine determine which partitions to scan based on the WHERE clause, significantly reducing I/O.',
               difficulty: 'Medium'
             },
+            {
+              question: 'When should you choose partitioning over sharding?',
+              answer: 'Partitioning splits one table across files on a single server and stays transparent to the application — use it when the server can still handle the write and I/O load but query performance suffers from table size. Sharding splits data across multiple servers, and you need it once a single server\'s total capacity (CPU, memory, disk I/O) is the real bottleneck.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'What\'s a common pitfall with foreign keys and partitioned tables?',
+              answer: 'MySQL does not support foreign key constraints that reference a partitioned table, so partitioning trades away database-level referential integrity — you have to enforce those relationships in the application layer instead.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -191,6 +221,16 @@ GROUP BY u.id;`,
               answer: 'INNER JOIN returns only matches; LEFT JOIN returns all from left plus matches (NULL if none).',
               difficulty: 'Easy'
             },
+            {
+              question: 'How do you simulate a FULL OUTER JOIN in MySQL?',
+              answer: 'MySQL has no native FULL OUTER JOIN. Combine a LEFT JOIN and a RIGHT JOIN (or two LEFT JOINs with the tables swapped) with UNION, which de-duplicates the rows that matched on both sides.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'What\'s the danger of a CROSS JOIN in production queries?',
+              answer: 'A CROSS JOIN returns the Cartesian product of both tables — every row from one paired with every row from the other. Two tables with 10,000 rows each produce 100 million result rows, which can exhaust memory or lock up the server, and it\'s usually an accident caused by a missing or wrong ON clause.',
+              difficulty: 'Easy'
+            },
           ],
         },
       ],
@@ -231,6 +271,16 @@ CREATE INDEX idx_orders_composite ON orders(user_id, status);`,
             {
               question: 'Explain the composite index left-prefix rule.',
               answer: 'The leftmost column of the index must be present in the query for the index to be used.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'How do you read the "rows" and "type" columns in an EXPLAIN output?',
+              answer: '"type" shows the access method: ALL means a full table scan (bad), while const/eq_ref/ref/range mean an index is being used, in roughly decreasing order of selectivity. "rows" is MySQL\'s estimate of how many rows it must examine — a huge number alongside type=ALL is the clearest sign the query needs an index.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why can wrapping an indexed column in a function disable the index?',
+              answer: 'A function like YEAR(created_at) or LOWER(email) in the WHERE clause forces MySQL to compute that function for every row before it can compare, because the index stores raw column values, not the transformed result. That forces a full table scan unless you index a generated column holding that exact expression.',
               difficulty: 'Medium'
             },
           ],
@@ -277,6 +327,16 @@ COMMIT;`,
               answer: 'Atomicity, Consistency, Isolation, Durability.',
               difficulty: 'Easy'
             },
+            {
+              question: 'What is the difference between REPEATABLE READ and READ COMMITTED?',
+              answer: 'READ COMMITTED lets each statement in a transaction see the latest committed data, so the same query can return different results if run twice. REPEATABLE READ (MySQL\'s default) takes a consistent snapshot at the start of the transaction, so repeated reads always return the same rows, using gap locks to also prevent phantom reads.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'When would you choose optimistic locking over pessimistic locking?',
+              answer: 'Optimistic locking (checking a version column before committing) fits high-read, low-contention workloads, since it avoids holding locks. Pessimistic locking (SELECT ... FOR UPDATE) fits high-contention writes, like decrementing shared inventory, where letting two transactions race would cause a lost update.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -321,6 +381,16 @@ FROM employees;`,
               answer: 'ROW_NUMBER is unique; RANK can have ties and skips next numbers.',
               difficulty: 'Medium'
             },
+            {
+              question: 'How would you calculate a running total per customer with a window function?',
+              answer: 'SUM(amount) OVER (PARTITION BY customer_id ORDER BY order_date) — PARTITION BY resets the running total for each customer, and ORDER BY defines the row-by-row accumulation order, all without collapsing rows the way GROUP BY would.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'What does DENSE_RANK() do differently from RANK()?',
+              answer: 'Both give tied rows the same rank, but RANK() leaves a gap in the sequence after a tie (1, 1, 3), while DENSE_RANK() continues with no gap (1, 1, 2).',
+              difficulty: 'Easy'
+            },
           ],
         },
       ],
@@ -360,6 +430,16 @@ FROM employees;`,
               question: 'What is a covering index?',
               answer: 'An index that contains all columns in the SELECT and WHERE clauses, allowing MySQL to avoid reading table rows entirely.',
               difficulty: 'Hard'
+            },
+            {
+              question: 'How would you diagnose a slow GROUP BY or ORDER BY query?',
+              answer: 'Check EXPLAIN for "Using filesort" or "Using temporary" in the Extra column — both mean MySQL couldn\'t use an index to satisfy the ordering or grouping and had to sort or build a temp table instead. Adding an index that matches the GROUP BY/ORDER BY column order usually removes both.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'What\'s the difference between EXPLAIN and EXPLAIN ANALYZE?',
+              answer: 'EXPLAIN shows the optimizer\'s estimated plan without running the query. EXPLAIN ANALYZE actually executes it and reports real timing and row counts alongside the plan, which matters most when the optimizer\'s estimates are wrong, such as on skewed data.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -401,6 +481,16 @@ FROM employees;`,
               answer: 'Create a generated column from the JSON path and index that column.',
               difficulty: 'Medium'
             },
+            {
+              question: 'What\'s the difference between the -> and ->> operators?',
+              answer: '-> extracts a value from a JSON document but keeps it as a JSON value (a string stays quoted). ->> extracts and unquotes it in one step, returning plain text — equivalent to wrapping -> in JSON_UNQUOTE().',
+              difficulty: 'Easy'
+            },
+            {
+              question: 'Why choose a JSON column over a separate normalized table?',
+              answer: 'JSON columns fit semi-structured or per-row-variable data, like a flexible settings or metadata blob, where a rigid table would mean sparse columns or constant schema migrations. Normalize instead once the data has a fixed, queryable structure that benefits from real foreign keys, indexes, and joins.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -421,6 +511,16 @@ FROM employees;`,
             {
               question: 'What is the main challenge with Master-Slave replication?',
               answer: 'Replication Lag. Data written to the master may not be immediately available on the slaves, which can cause consistency issues for the user.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'What\'s the difference between statement-based and row-based replication?',
+              answer: 'Statement-based replication ships the actual SQL statement to replicas, which is compact but can diverge if the statement is non-deterministic, like NOW() or RAND(). Row-based replication ships the actual changed rows, which is larger but guarantees identical data on every replica.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'How would you scale read-heavy traffic using replication?',
+              answer: 'Route writes to the master and distribute reads across one or more read replicas, often through a proxy or the application\'s connection layer, accepting some replication lag. For reads that must be strongly consistent right after a write, read from the master instead.',
               difficulty: 'Medium'
             }
           ]

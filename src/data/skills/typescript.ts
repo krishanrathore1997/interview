@@ -53,6 +53,11 @@ type Admin = User & { role: 'admin' };`,
               answer: 'Both can describe object shapes. Interfaces are extendable and support declaration merging, so they’re good for public object contracts. Types are more flexible and are required for unions/intersections and many advanced type transforms. In practice: pick the one that keeps the API readable.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Can two interfaces with the same name in the same scope coexist?',
+              answer: 'Yes — that\'s declaration merging. TypeScript combines their members into a single interface. A `type` alias cannot be redeclared the same way; a duplicate type name is a compile error.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -92,6 +97,11 @@ declare const orderId: OrderId;
               question: 'What does “TypeScript is structurally typed” mean?',
               answer: 'Compatibility is based on shape. If two values have the same required fields, they’re assignable even if they came from different “types” or domains. This is convenient, but you may need branded types to prevent mixing same-shaped values like IDs.',
               difficulty: 'Medium',
+            },
+            {
+              question: 'Why can an object literal fail a check that an equivalent variable passes?',
+              answer: 'Excess property checks only apply to object literals assigned directly to a typed variable or parameter — TypeScript flags extra properties there because they\'re likely typos. Assigning through a variable first skips that check, since structural typing only verifies the required shape is present, not that nothing extra was added.',
+              difficulty: 'Hard',
             },
           ],
         },
@@ -164,6 +174,11 @@ function render(s: Status) {
               answer: '`unknown` forces you to narrow with runtime checks before using the value. `any` disables checking and lets runtime errors slip through. In real projects, treat external inputs as unknown until validated.',
               difficulty: 'Easy',
             },
+            {
+              question: 'What\'s the difference between `never` and `void` as a return type?',
+              answer: '`void` means the function returns, just without a meaningful value (undefined). `never` means the function never returns at all — it always throws or loops forever, which is how TypeScript models things like a function that always throws or an exhaustive-check fallback.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -207,6 +222,11 @@ function isUser(value: unknown): value is User {
             {
               question: 'What is a custom type guard in TypeScript?',
               answer: 'A function that performs runtime checks and has a return type like `value is SomeType`. If it returns true, TypeScript narrows the variable to that type in the surrounding scope.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'What is a discriminated union, and why is it useful?',
+              answer: 'A union of object types that share one literal "tag" property, like `{ status: \'success\'; data: T } | { status: \'error\'; error: string }`. Checking that tag lets TypeScript narrow to the exact matching variant in each branch, which is safer than modeling the same state with a bag of optional fields.',
               difficulty: 'Medium',
             },
           ],
@@ -256,6 +276,11 @@ const user = await fetchJson<User>('/api/user');`,
               answer: 'They let you write reusable helpers while preserving the relationship between inputs and outputs. This keeps types accurate without using any.',
               difficulty: 'Easy',
             },
+            {
+              question: 'How does a generic constraint like `<T extends { id: string }>` help?',
+              answer: 'It guarantees T has an id: string property, so you can safely access .id inside the function, while T still stays as specific as whatever shape the caller actually passed — unlike widening the parameter to a fixed interface, which would lose the rest of the caller\'s type.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -291,6 +316,11 @@ type UserPatch = Partial<Pick<User, 'email'>>;`,
             {
               question: 'When would you use `Omit` or `Pick` in a real project?',
               answer: 'To shape DTOs. Example: remove passwordHash from a User type for client responses, or pick only allowed fields for update requests.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'What do ReturnType<T> and Awaited<T> do, and how do they combine?',
+              answer: 'ReturnType<T> extracts the return type of a function type. Awaited<T> unwraps what a Promise resolves to, recursively through nested promises. Awaited<ReturnType<typeof fetchUser>> is a common way to derive a data shape straight from an existing async function instead of duplicating a type by hand.',
               difficulty: 'Medium',
             },
           ],
@@ -338,6 +368,11 @@ const permissions = {
               answer: 'Do it incrementally: turn on strict checks gradually, fix critical paths first, add lint rules to prevent new any, and keep type safety at boundaries (API, env). Avoid a “big bang” conversion.',
               difficulty: 'Hard',
             },
+            {
+              question: 'What does noUncheckedIndexedAccess do, and why isn\'t it part of the base strict flag?',
+              answer: 'It makes indexing into an array or a Record type return `T | undefined` instead of just T, forcing you to handle the missing-key case. It\'s opt-in separately from strict because it\'s noisier and often requires touching a lot of existing indexing code across a codebase.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -376,6 +411,11 @@ const permissions = {
               question: 'Why do teams use path aliases like `@/`?',
               answer: 'They avoid brittle relative imports, make refactors easier, and improve code navigation. The key is keeping TS, bundler, and lint/test tooling consistent.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'What\'s the risk of a path alias that\'s only configured in tsconfig?',
+              answer: 'The type checker resolves the import fine, but the actual bundler or Node resolver at runtime has no idea what "@/lib/x" means unless it\'s configured there too — so the code can type-check cleanly and still crash with a "module not found" error the moment it actually runs.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -423,6 +463,11 @@ export function Button({ variant = 'primary', ...props }: Props) {
               answer: 'Define a Props type, keep it small, and rely on inference where it stays readable. For native elements, compose with React.ComponentProps to inherit correct HTML attributes.',
               difficulty: 'Medium',
             },
+            {
+              question: 'When would you reach for a generic component instead of a union-typed prop?',
+              answer: 'Use a generic component, like `<List<T> items={T[]} renderItem={(item: T) => ReactNode} />`, when the prop\'s type should be inferred from whatever the caller passes in and stay linked across multiple props. A union prop type is enough when the component only needs to branch between a small, fixed set of known shapes.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -460,6 +505,11 @@ export function Button({ variant = 'primary', ...props }: Props) {
             {
               question: 'Why prefer `currentTarget` over `target` in React event handlers?',
               answer: 'currentTarget is the element the handler is attached to (strongly typed). target can be a child element and is often less specific. Using currentTarget avoids subtle typing and runtime bugs.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'How do you type a ref that will be attached to a DOM element?',
+              answer: 'useRef<HTMLInputElement>(null) — the generic tells TypeScript what the ref will eventually point to, and the initial null argument is required since the ref is empty before the element mounts.',
               difficulty: 'Medium',
             },
           ],

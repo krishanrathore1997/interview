@@ -59,6 +59,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'It tells the browser to render the document in standards mode instead of quirks mode. That gives more predictable CSS layout and browser behavior.',
               difficulty: 'Easy',
             },
+            {
+              question: 'What actually happens if you omit the DOCTYPE?',
+              answer: 'The browser falls back to "quirks mode," emulating old, inconsistent rendering behaviors from pre-standards browsers, which can subtly change box-model sizing and other layout calculations in ways that are hard to debug.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -105,6 +110,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Semantic HTML uses elements that describe meaning, like main, nav, article, and button. It helps browsers, screen readers, search engines, tests, and developers understand the page.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why use <button> instead of a <div onclick=...> for a clickable action?',
+              answer: '<button> is natively keyboard-focusable and operable with Enter/Space, exposes the correct role to screen readers automatically, and gets built-in form-submission behavior. A div needs a manually added tabindex, an ARIA role, and keydown handlers just to reach the same baseline accessibility.',
+              difficulty: 'Easy',
+            },
           ],
         },
         {
@@ -147,6 +157,11 @@ export const htmlCss: SkillPageContent = {
               question: 'Why should every input have a label?',
               answer: 'Labels improve accessibility, enlarge the clickable area, and make the form understandable to assistive technologies. Placeholder text is not a replacement.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'Why is client-side form validation not a security control?',
+              answer: 'Client-side checks run in code the user fully controls and can bypass entirely, by disabling JavaScript, using devtools, or calling the API directly. They\'re a UX convenience for catching typos early; the server must independently validate and reject bad input regardless of what the client claims.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -196,6 +211,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Specificity is the scoring system browsers use to decide which CSS selector wins when multiple rules target the same element. Inline styles, IDs, classes, and elements have different weights.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why can a later single-class selector still lose to an earlier rule with two classes?',
+              answer: 'Source order only breaks ties when specificity is equal. A selector with two classes has higher specificity than one with a single class, so it wins regardless of which rule appears later in the stylesheet — you have to match or exceed that specificity, not just reorder the CSS.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -239,6 +259,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Each element has content, padding, border, and margin. By default width applies to content only, but with border-box the declared width includes content, padding, and border.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why can two elements with identical padding, border, and width still render at different sizes?',
+              answer: 'If one uses content-box (the default) and the other uses border-box, padding and border get added on top of the declared width in the first case but are included within it in the second, so the same values produce different rendered sizes depending on box-sizing.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -281,6 +306,11 @@ export const htmlCss: SkillPageContent = {
               question: 'What is the difference between relative, absolute, fixed, and sticky positioning?',
               answer: 'relative keeps the element in normal flow and offsets it. absolute removes it from flow and positions it against the nearest positioned ancestor. fixed positions against the viewport. sticky behaves normal until it reaches a threshold, then sticks.',
               difficulty: 'Medium',
+            },
+            {
+              question: 'Why can overflow: hidden on a parent silently break position: sticky on a child?',
+              answer: 'Sticky needs the browser to track the element within its nearest scrolling ancestor and release it once that container scrolls out of view. If any ancestor between the sticky element and the scroll container clips with overflow hidden/auto/scroll, that ancestor becomes the effective boundary and can clip the element before sticky behavior ever triggers.',
+              difficulty: 'Hard',
             },
           ],
         },
@@ -329,6 +359,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Use Flexbox for one-dimensional layouts, either a row or a column. It is ideal for alignment, spacing, nav bars, button groups, and small component layouts.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why does a flex child with long text overflow even with text-overflow: ellipsis set?',
+              answer: 'Flex items have an implicit min-width: auto, which stops them shrinking smaller than their content\'s intrinsic size by default, so the truncation CSS never gets a chance to apply. Setting min-width: 0 on the flex child overrides that default and lets truncation actually work.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -367,6 +402,11 @@ export const htmlCss: SkillPageContent = {
               question: 'Flexbox vs Grid: what is the difference?',
               answer: 'Flexbox is mainly one-dimensional: row or column. Grid is two-dimensional: rows and columns together. Use Flexbox inside components and Grid for larger layout structures.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'What\'s the difference between fr units and percentages for grid columns?',
+              answer: 'fr units divide the remaining space after fixed-size tracks and gaps are accounted for, so "200px 1fr 1fr" gives the fixed column exactly what it needs first, then splits what\'s left evenly. Percentages are always relative to the full container width, so mixing them with fixed columns and gaps can overflow the container.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -412,6 +452,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Write the default styles for small screens first, then use min-width media queries to enhance the layout for larger screens. This usually produces simpler, more resilient CSS.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why do rem-based font sizes scale better across devices than fixed px values?',
+              answer: 'rem is relative to the root <html> font-size, so if a user increases their browser\'s default font size for accessibility, every rem-based value scales proportionally with it. A fixed px value ignores that accessibility preference entirely.',
+              difficulty: 'Medium',
+            },
           ],
         },
       ],
@@ -455,6 +500,11 @@ export const htmlCss: SkillPageContent = {
               answer: 'Check keyboard navigation, focus visibility, labels for form controls, meaningful alt text, heading order, color contrast, and whether interactive elements use the correct semantic element.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why is alt="" (empty, not missing) correct for a purely decorative image?',
+              answer: 'An empty alt attribute explicitly tells screen readers to skip the image entirely, so users don\'t waste time hearing a meaningless filename or "image" announcement for a decorative divider or icon. Omitting the attribute altogether is different — some screen readers announce the file path instead, which is worse than silence.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -493,6 +543,11 @@ button?.addEventListener('click', () => {
               question: 'What is the DOM?',
               answer: 'The DOM is the browser representation of an HTML document as a tree of objects. JavaScript can read and update that tree to change what the user sees.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'What is event delegation, and why does it help with a large dynamic list?',
+              answer: 'Instead of attaching a click listener to every one of 1,000 list items, you attach one listener to their shared parent and use event bubbling plus e.target to figure out which item was clicked. That means far fewer listeners in memory, and new items added later work automatically without needing their own listener.',
+              difficulty: 'Medium',
             },
           ],
         },

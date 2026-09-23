@@ -59,6 +59,11 @@ export const nextjs: SkillPageContent = {
               answer: 'Only when you need browser APIs, event handlers, or client-only hooks like useState and useEffect.',
               difficulty: 'Easy'
             },
+            {
+              question: 'Why can\'t you pass a function as a prop from a Server Component to a Client Component?',
+              answer: 'Server Components run and finish executing entirely on the server, and their output is serialized and sent to the client. A function isn\'t serializable, so only serializable data — strings, numbers, plain objects, JSX — can cross that boundary; interactivity itself must live inside a Client Component.',
+              difficulty: 'Hard'
+            },
           ],
         },
         {
@@ -100,6 +105,11 @@ export async function createPost(formData: FormData) {
             {
               question: 'What problem do Server Functions solve?',
               answer: 'They keep simple write operations on the server without needing a separate API route for every form or button action.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why is calling a Server Function from inside useEffect usually a mistake?',
+              answer: 'Server Functions are designed for user-triggered writes tied to an explicit action, like a form submit or button click, where the mutation has clear intent and pending/error UI. Firing one from useEffect can trigger it on every render or mount, causing duplicate writes the user never asked for.',
               difficulty: 'Medium'
             },
           ],
@@ -148,6 +158,11 @@ app/dashboard/api/route.ts`,
               answer: 'layout.tsx is shared and preserves state between child route navigations. template.tsx creates a new instance on navigation, so it can reset state, animations, or effects.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why does loading.tsx improve perceived performance on a slow dynamic route?',
+              answer: 'It automatically wraps the route segment in a Suspense boundary, so Next.js can immediately show that fallback while the slower data-dependent content streams in behind it, instead of leaving the user staring at a blank screen or the previous page until the whole route is ready.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -185,6 +200,11 @@ app/photos/(.)[id]/page.tsx`,
               question: 'What are route groups in Next.js?',
               answer: 'Route groups are folders wrapped in parentheses, like (marketing). They organize routes and apply layouts without adding a URL segment.',
               difficulty: 'Medium',
+            },
+            {
+              question: 'Why use an intercepting route for a photo modal instead of a plain conditional modal component?',
+              answer: 'An intercepting route stays reachable by direct URL — sharing or refreshing the link still lands on the full detail page — while showing it as an overlay when navigated to from within the app. A plain client-side modal has no URL of its own, so a shared link or refresh loses that context entirely.',
+              difficulty: 'Hard',
             },
           ],
         },
@@ -232,6 +252,11 @@ export function Nav() {
               answer: 'Link enables client-side transitions and route prefetching, so shared layouts can stay mounted and navigation feels faster. A plain anchor triggers normal browser document navigation.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why might a dynamic route feel slower to navigate to even with next/link?',
+              answer: 'Link can only prefetch what\'s safe to prefetch ahead of time. A fully dynamic route without loading.tsx has to wait for the server to actually render before anything shows up, so click-to-content time depends on that server response instead of a cached prefetch.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -276,6 +301,11 @@ export default function Page() {
               question: 'What problem does next/image solve?',
               answer: 'It optimizes image size and format, supports lazy loading, handles remote/local images, and helps prevent layout shift when width and height are known.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'Why does next/font avoid the layout shift a regular Google Fonts <link> tag usually causes?',
+              answer: 'next/font downloads and self-hosts the font at build time and injects @font-face rules with size-adjust metrics computed for that font, so the browser can reserve the correct space before it loads. A regular external <link> renders with a fallback font first, then swaps fonts once the network request finishes, shifting layout.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -328,6 +358,11 @@ export default function Page() {
               answer: 'Next.js 16 no longer uses the older experimental PPR route flag. It focuses on cache tools and Suspense-based streaming for mixing fast static content with dynamic content.',
               difficulty: 'Hard'
             },
+            {
+              question: 'Why does wrapping a slow section in Suspense change what the rest of the page has to wait for?',
+              answer: 'Without Suspense, the whole page\'s response can\'t be sent until every part of it is ready. Wrapping a slow section in Suspense lets Next.js send the fast, ready parts immediately and stream the fallback-then-real content separately, so one slow dependency no longer blocks parts of the page that were always ready.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -376,6 +411,11 @@ export function proxy() {
               answer: 'Use React and Next.js automatic escaping, avoid unsafe HTML injection, and add a clear Content Security Policy and safe server boundaries.',
               difficulty: 'Medium'
             },
+            {
+              question: 'Why do Server Functions still need CSRF protection when they\'re not traditional REST endpoints?',
+              answer: 'A Server Function is invoked over an HTTP POST under the hood, and if a browser holds an authenticated session cookie for your site, a malicious page could still try to trigger that action, just like classic form-based CSRF, unless the framework validates the request actually originated from your own app.',
+              difficulty: 'Hard'
+            },
           ],
         },
       ],
@@ -420,6 +460,11 @@ export function proxy() {
               answer: 'It means serving a cached page first and then refreshing it later in the background so users get both speed and fresh data.',
               difficulty: 'Medium'
             },
+            {
+              question: 'When would you choose revalidateTag() over revalidatePath()?',
+              answer: 'revalidatePath() invalidates everything rendered by one specific route, even if multiple unrelated pieces of data were fetched there. revalidateTag() invalidates just the data that changed — tag a specific fetch and revalidate only that tag — which is more precise when the same data is reused across several different pages.',
+              difficulty: 'Hard'
+            },
           ],
         },
       ],
@@ -441,6 +486,11 @@ export function proxy() {
               question: 'What can you do in Next.js Middleware?',
               answer: 'You can inspect cookies, rewrite/redirect requests, and add custom headers. It runs before the route handler, making it perfect for global auth checks.',
               difficulty: 'Medium'
+            },
+            {
+              question: 'Why is Middleware a poor place to do a full database lookup for authorization?',
+              answer: 'Middleware runs on every matching request, often on an edge runtime with limited APIs and a strict time budget, before the request even reaches your normal server environment. A slow database call there adds latency to every request through that path, so middleware is best for cheap checks like reading a cookie or token, not full authorization logic.',
+              difficulty: 'Hard'
             }
           ]
         },
@@ -477,6 +527,11 @@ NEXT_PUBLIC_ANALYTICS_ID=public-client-id`,
             {
               question: 'How do environment variables work in Next.js?',
               answer: 'Next.js loads .env files from the project root into process.env on the server. Variables prefixed with NEXT_PUBLIC_ are inlined into the browser bundle, so secrets must never use that prefix.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'Why use a redirect instead of a rewrite when a page has permanently moved?',
+              answer: 'A redirect changes the URL the browser and user actually see, updating bookmarks and search indexing to the new canonical address. A rewrite serves different content at the same visible URL without the browser knowing, which is wrong for a moved page since old links and search results would keep pointing at a URL that no longer represents the canonical location.',
               difficulty: 'Medium',
             },
           ],

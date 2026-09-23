@@ -1,98 +1,25 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { SkillConcept, SkillTopic } from '@/data/skills';
+import type { SkillExample, SkillCodeSample, SkillInterviewQuestion } from '@/data/types';
+import { useSkillsProgress } from '@/lib/useSkillsProgress';
+import { topicSlugs } from '@/lib/topicSlugs';
+import CodeBlock from '@/components/CodeBlock';
 
 interface Props {
   concept: SkillConcept;
   topic: SkillTopic;
 }
 
-const STORAGE_KEY = 'skills_progress_v1';
-
-type ProgressMap = Record<string, Record<string, true>>;
-
-const slugByTopic: Record<SkillTopic, string> = {
-  Laravel: 'laravel',
-  PHP: 'php',
-  'HTML & CSS': 'html-css',
-  JavaScript: 'javascript',
-  TypeScript: 'typescript',
-  React: 'react',
-  MySQL: 'sql',
-  'HTTP & APIs': 'apis',
-  Security: 'security',
-  Testing: 'testing',
-  'Next.js': 'nextjs',
-  Git: 'git',
-  'System Design': 'system-design',
-  DevOps: 'devops',
-};
-
-function safeParseProgress(raw: string | null): ProgressMap {
-  if (!raw) return {};
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return {};
-    const obj = parsed as Record<string, unknown>;
-    const result: ProgressMap = {};
-
-    for (const [topicSlug, value] of Object.entries(obj)) {
-      if (!value || typeof value !== 'object') continue;
-      const conceptMap = value as Record<string, unknown>;
-      const out: Record<string, true> = {};
-      for (const [conceptId, done] of Object.entries(conceptMap)) {
-        if (done === true) out[conceptId] = true;
-      }
-      if (Object.keys(out).length > 0) result[topicSlug] = out;
-    }
-
-    return result;
-  } catch {
-    return {};
-  }
-}
-
 export default function SkillConceptCard({ concept, topic }: Props) {
   const [openQIdx, setOpenQIdx] = useState<number | null>(null);
-  const [isDone, setIsDone] = useState(false);
+  const { progress, toggleConcept } = useSkillsProgress();
 
-  const topicSlug = useMemo(() => slugByTopic[topic], [topic]);
+  const topicSlug = topicSlugs[topic];
+  const isDone = !!progress[topicSlug]?.[concept.id];
 
-  useEffect(() => {
-    try {
-      const parsed = safeParseProgress(localStorage.getItem(STORAGE_KEY));
-      setIsDone(!!parsed[topicSlug]?.[concept.id]);
-    } catch {}
-  }, [topicSlug, concept.id]);
-
-  const toggleDone = () => {
-    setIsDone((prev) => {
-      const nextDone = !prev;
-
-      try {
-        const parsed = safeParseProgress(localStorage.getItem(STORAGE_KEY));
-        const next: ProgressMap = { ...parsed };
-        const nextTopic = { ...(next[topicSlug] ?? {}) };
-
-        if (nextDone) {
-          nextTopic[concept.id] = true;
-        } else {
-          delete nextTopic[concept.id];
-        }
-
-        if (Object.keys(nextTopic).length === 0) {
-          delete next[topicSlug];
-        } else {
-          next[topicSlug] = nextTopic;
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {}
-
-      return nextDone;
-    });
-  };
+  const toggleDone = () => toggleConcept(topicSlug, concept.id);
 
   return (
     <div id={concept.id} className="concept-card anchor">
@@ -122,7 +49,7 @@ export default function SkillConceptCard({ concept, topic }: Props) {
       )}
 
       {/* Examples with code */}
-      {concept.examples?.map((ex: any, i: number) => (
+      {concept.examples?.map((ex: SkillExample, i: number) => (
         <div key={i} style={{ marginBottom: '1rem' }}>
           <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
             {ex.title}
@@ -137,7 +64,7 @@ export default function SkillConceptCard({ concept, topic }: Props) {
       ))}
 
       {/* Extra code samples */}
-      {concept.codeSamples?.map((cs: any, i: number) => (
+      {concept.codeSamples?.map((cs: SkillCodeSample, i: number) => (
         <CodeBlock key={i} code={cs.code} language={cs.language} label={cs.label} />
       ))}
 
@@ -156,7 +83,7 @@ export default function SkillConceptCard({ concept, topic }: Props) {
           <div>
             <div className="label" style={{ marginBottom: '0.5rem' }}>Interview Questions</div>
             <div className="qa-list">
-              {concept.interviewQuestions.map((iq: any, i: number) => (
+              {concept.interviewQuestions.map((iq: SkillInterviewQuestion, i: number) => (
                 <div key={i} className="qa-item" data-open={openQIdx === i}>
                   <button
                     type="button"
@@ -187,32 +114,6 @@ export default function SkillConceptCard({ concept, topic }: Props) {
             </div>
           </div>
       )}
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   Inline CodeBlock (no external package needed)
-──────────────────────────────────────────── */
-function CodeBlock({ code, language, label }: { code: string; language: string; label?: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = () => {
-    navigator.clipboard.writeText(code).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  };
-
-  return (
-    <div className="code-block">
-      <div className="code-header">
-        <span className="code-lang">{label ?? language}</span>
-        <button type="button" className="code-copy-btn" onClick={copy}>
-          {copied ? '✓ Copied' : 'Copy'}
-        </button>
-      </div>
-      <pre className="code-content">{code}</pre>
     </div>
   );
 }

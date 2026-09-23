@@ -36,6 +36,11 @@ export const testing: SkillPageContent = {
               answer: 'Unit tests cover small logic in isolation. Integration tests cover multiple components together (framework, DB, HTTP). E2E tests simulate real user flows. A healthy suite is a pyramid: many unit, some integration, few E2E.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why do integration tests catch bugs that unit tests miss?',
+              answer: 'Unit tests mock dependencies by design, so they can\'t catch a bug in how two real components actually connect — a wrong SQL query, a misconfigured route, a serialization mismatch. Integration tests exercise the real wiring, which is where a large share of production bugs actually live.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -57,6 +62,11 @@ export const testing: SkillPageContent = {
             {
               question: 'Why is 100% test coverage not the goal?',
               answer: 'Coverage measures what ran, not what was asserted. You want high-signal tests on risky logic and critical flows. Chasing 100% often produces brittle tests on trivial code.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'How would you decide what to test first on a brand-new feature?',
+              answer: 'Start with the parts that are expensive to get wrong: money or billing logic, authorization boundaries, and calculations with real edge cases like rounding, empty input, or boundary values. Trivial getters and framework-generated code add coverage numbers without adding real confidence.',
               difficulty: 'Medium',
             },
           ],
@@ -89,6 +99,11 @@ export const testing: SkillPageContent = {
               answer: 'Stubs return fixed values. Spies record calls. Mocks also record calls but typically include expectations like “must be called with X”. Use them at boundaries and keep core logic real.',
               difficulty: 'Easy',
             },
+            {
+              question: 'When would mocking too aggressively actually hurt your test suite?',
+              answer: 'If every collaborator is mocked, the test only verifies your code calls the mocks the way you expected, not that the real system behaves correctly. A refactor that keeps behavior identical but changes internal call patterns then breaks tests that shouldn\'t have broken, teaching the team to distrust red CI.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -109,6 +124,11 @@ export const testing: SkillPageContent = {
             {
               question: 'How do you make code more testable?',
               answer: 'Separate pure logic from side effects, inject dependencies (DB/time/network), avoid global state, and keep functions small with clear inputs/outputs. This makes unit tests fast and reliable.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'Why does injecting a clock or UUID generator make tests more reliable than calling Date.now() directly?',
+              answer: 'A function that reads the real clock or generates a real random ID produces a different result on every run, so assertions on time- or ID-based output become flaky or impossible to write precisely. Injecting a fake clock or generator lets the test control the exact value and assert deterministically.',
               difficulty: 'Medium',
             },
           ],
@@ -141,6 +161,11 @@ export const testing: SkillPageContent = {
               answer: 'Test status codes, validation errors, authentication/authorization, and response schema. Use a test DB (transactions/fixtures) and assert side effects. Mock external services at the boundary.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why test the response schema, not just the status code, for an API endpoint?',
+              answer: 'A 200 status code doesn\'t guarantee the body still has the shape consumers expect — a field could silently be renamed, removed, or change type without touching the status code. Schema assertions catch contract-breaking changes that a purely status-code-based test would miss entirely.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -161,6 +186,11 @@ export const testing: SkillPageContent = {
             {
               question: 'What makes tests flaky and how do you fix it?',
               answer: 'Flakes come from timing, concurrency, shared state, random data, real network, and clocks. Fix with deterministic data, isolated DB state, proper waiting for async conditions, and mocking at boundaries.',
+              difficulty: 'Hard',
+            },
+            {
+              question: 'Why does "passes locally, fails in CI" often trace back to test isolation?',
+              answer: 'Locally, tests might always run one at a time in the same order, silently relying on data left behind by a previous test. In CI, tests can run in parallel or a different order, so a test that assumed "the users table starts empty" or "ID 1 exists" breaks the moment that assumption stops holding.',
               difficulty: 'Hard',
             },
           ],
@@ -192,6 +222,11 @@ export const testing: SkillPageContent = {
               answer: 'Test user behavior with React Testing Library: query by role/label/text, fire user events, and assert visible outcomes. Avoid brittle snapshots and avoid testing implementation details.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why does querying by role or label text produce more resilient tests than a CSS class or test ID?',
+              answer: 'Role/label queries test what a real user (and a screen reader) perceives, which usually only changes when user-facing behavior changes. A CSS class or DOM structure can be refactored for purely internal or styling reasons, and a selector tied to it breaks even though nothing the user experiences actually changed.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -213,6 +248,11 @@ export const testing: SkillPageContent = {
               question: 'How many E2E tests should a typical product have?',
               answer: 'A small number focused on critical user journeys (login, checkout, onboarding). Most logic should be covered by unit/integration tests for speed and reliability.',
               difficulty: 'Hard',
+            },
+            {
+              question: 'Why do E2E tests tend to be flakier than unit or integration tests?',
+              answer: 'E2E tests depend on the most moving parts at once — network timing, real rendering, animations, third-party services, browser quirks — so there are far more places for a transient, unrelated failure to sneak in. That\'s why they\'re reserved for a small number of truly critical flows instead of exhaustive coverage.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -243,6 +283,11 @@ export const testing: SkillPageContent = {
               question: 'How do you make tests fast and reliable in CI?',
               answer: 'Run small checks first, parallelize, isolate DB state, avoid real network, use deterministic fixtures, and cache dependencies. Fix flakiness rather than adding retries everywhere.',
               difficulty: 'Hard',
+            },
+            {
+              question: 'Why can caching dependencies (npm/composer) meaningfully speed up CI?',
+              answer: 'Reinstalling every package from scratch on every run repeats the same network downloads and disk writes even when nothing in the lockfile changed. Caching the dependency directory between runs, keyed on the lockfile hash, skips that repeated work and often cuts install time from minutes to seconds.',
+              difficulty: 'Easy',
             },
           ],
         },

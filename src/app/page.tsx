@@ -789,6 +789,19 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignSelf: 'center' }}>
           <Link
+            href="/checklist"
+            style={{
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-default)',
+              borderRadius: '8px',
+              padding: '0.625rem 1rem',
+            }}
+          >
+            Track your progress -&gt;
+          </Link>
+          <Link
             href="/interview"
             style={{
               fontSize: '0.875rem',

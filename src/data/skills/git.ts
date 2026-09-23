@@ -47,6 +47,11 @@ git clone <url>`,
               answer: 'init starts fresh; clone copies remote history.',
               difficulty: 'Easy'
             },
+            {
+              question: 'What\'s the difference between cloning over SSH vs HTTPS?',
+              answer: 'SSH uses key-based auth — no password prompt once your key is registered, which works well for daily pushes and CI. HTTPS uses a username/token per request (or a credential helper) and tends to get through corporate proxies and firewalls that block SSH\'s port.',
+              difficulty: 'Easy'
+            },
           ],
         },
       ],
@@ -88,6 +93,11 @@ git commit -m "feat: user auth"`,
               question: 'git diff vs git diff --staged?',
               answer: 'diff is unstaged; --staged is what is about to be committed.',
               difficulty: 'Easy'
+            },
+            {
+              question: 'What does git add -p let you do that git add doesn\'t?',
+              answer: 'Patch mode walks through your changes hunk by hunk and lets you stage only part of a file\'s edits, so you can split unrelated changes into separate, logical commits instead of committing an entire file\'s worth of unrelated diffs at once.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -132,6 +142,11 @@ git merge feature`,
               answer: 'Keep private feature branches updated with main for clean history.',
               difficulty: 'Medium'
             },
+            {
+              question: 'What\'s the "Golden Rule of Rebase"?',
+              answer: 'Never rebase a branch that other people have already pulled from or built work on top of. Rebase rewrites commit hashes, so anyone with the old commits diverges from you, leading to confusing history and painful conflicts when they try to sync.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -170,6 +185,11 @@ git revert <hash>`,
             {
               question: 'Reset --hard vs Revert?',
               answer: 'Reset deletes history; Revert creates an inverse commit (safe for shared).',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'What\'s the difference between reset --soft, --mixed, and --hard?',
+              answer: '--soft moves HEAD but keeps your changes staged. --mixed (the default) moves HEAD and unstages the changes but keeps them in the working directory. --hard moves HEAD and discards the changes entirely, so uncommitted work is gone unless it\'s recoverable through the reflog.',
               difficulty: 'Medium'
             },
           ],
@@ -211,6 +231,11 @@ git revert <hash>`,
               answer: 'A way to checkout multiple branches into different folders at once.',
               difficulty: 'Medium'
             },
+            {
+              question: 'How is a worktree different from just cloning the repo again into another folder?',
+              answer: 'A worktree shares the same .git object database and history with the original clone, so branches, stashes, and fetches are visible across all worktrees instantly, and it uses far less disk space than a second full clone.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -243,6 +268,11 @@ git revert <hash>`,
               answer: 'Use git bisect to pinpoint the regression.',
               difficulty: 'Medium'
             },
+            {
+              question: 'How does git bisect narrow down a buggy commit so efficiently?',
+              answer: 'It performs a binary search: you mark one known-good and one known-bad commit, and it checks out the midpoint for you to test. Each good/bad answer halves the remaining range, so even thousands of commits resolve in roughly log2(n) steps.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -263,6 +293,11 @@ git revert <hash>`,
             {
               question: 'What are the three main bucket types in Git?',
               answer: 'Blob (file contents), Tree (directory structure), and Commit (snapshot and metadata).',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'Why don\'t two identical files in different parts of a repo double the storage?',
+              answer: 'Git is content-addressable — a blob\'s identity is the SHA-1 hash of its content. Two files with identical content produce the identical blob hash, so Git stores that content once, no matter how many tree entries across history point to it.',
               difficulty: 'Hard'
             }
           ]

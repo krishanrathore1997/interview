@@ -119,8 +119,8 @@ export default function AIAgent({
 
   return (
     <div
-      className={`relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[rgba(255,255,255,0.02)] p-6 ${
-        className ?? 'h-[600px]'
+      className={`relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[rgba(255,255,255,0.02)] p-4 sm:p-6 ${
+        className ?? 'h-[min(70vh,600px)] min-h-[380px]'
       }`}
     >
       <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-transparent via-[var(--text-accent)] to-transparent opacity-30" />

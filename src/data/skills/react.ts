@@ -58,6 +58,11 @@ export const react: SkillPageContent = {
               answer: 'It means building UI from components and data flow: split the UI into components, build a static version, identify the minimal state, choose where that state lives, then pass data down and events up.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why should state usually live in the closest common ancestor instead of a global store by default?',
+              answer: 'Keeping state local limits the blast radius of a re-render to only the components that actually consume it, and keeps behavior easy to reason about without tracing changes through a global store. Lift it only when two components that don\'t already share that ancestor genuinely need to see the same value.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -102,6 +107,11 @@ export const react: SkillPageContent = {
               question: 'What are the key rules of JSX?',
               answer: 'JSX must return one parent element, tags must be closed, component names start with a capital letter, class becomes className, and JavaScript expressions go inside curly braces.',
               difficulty: 'Easy',
+            },
+            {
+              question: 'Why does React need a stable key specifically for lists, but not for a single conditional element?',
+              answer: 'React uses the key to match each array item across renders to the correct component instance, so it knows which one to update, insert, or remove. Without one it falls back to matching by position, which breaks when items are reordered or removed. A single conditional element has no siblings to disambiguate from, so there\'s nothing for a key to resolve.',
+              difficulty: 'Medium',
             },
           ],
         },
@@ -148,6 +158,11 @@ export const react: SkillPageContent = {
               answer: 'During one render, state values do not change. A setter schedules a future render with new values, but the current event handler still sees the old snapshot.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why can two consecutive setCount(count + 1) calls in the same handler only add 1, not 2?',
+              answer: 'Both calls read the same count value captured in that render\'s closure, since state doesn\'t update until the next render, so both compute count + 1 from the same starting number. The functional form, setCount(c => c + 1), reads the latest queued value instead of the stale closure, so two calls correctly add 2.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -183,6 +198,11 @@ export const react: SkillPageContent = {
             {
               question: 'How does React decide whether to preserve or reset component state?',
               answer: 'React preserves state when the same component type stays at the same position in the tree. It resets state when the component type changes or when its key changes.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'Why does swapping which component renders at the same JSX position reset state, even without changing any key?',
+              answer: 'React associates state with a position in the tree paired with the component type rendered there. Changing the type at that position, even with everything else identical, is treated as unmounting the old instance and mounting a new one, since a completely different component can\'t meaningfully reuse another component\'s internal state shape.',
               difficulty: 'Medium',
             },
           ],
@@ -222,6 +242,11 @@ export const react: SkillPageContent = {
               question: 'When do you not need useEffect?',
               answer: 'You do not need useEffect for derived data, event-specific logic, or resetting state that can be handled with keys. Effects are mainly for synchronizing with external systems like network, subscriptions, timers, or browser APIs.',
               difficulty: 'Medium',
+            },
+            {
+              question: 'Why is fetching data inside a Client Component\'s useEffect often an anti-pattern in modern React/Next.js apps?',
+              answer: 'It causes a client-server request waterfall: the browser first downloads and runs JavaScript, mounts the component, then fires the fetch, so the user waits through an extra round trip that server-side data fetching in a Server Component could have skipped entirely by fetching before any HTML is sent.',
+              difficulty: 'Hard',
             },
           ],
         },
@@ -287,6 +312,11 @@ function SubmitButton() {
               answer: 'They eliminate manual state management for "pending" and "error" states. By passing an async function to the form "action" prop, React automatically tracks the transition and provides hooks like useActionState and useFormStatus to access progress and results.',
               difficulty: 'Medium'
             },
+            {
+              question: 'What specifically replaces manual isSubmitting state in a React 19 Actions form?',
+              answer: 'Passing an async function directly to a form\'s action prop lets React automatically track the pending transition of that submission. useActionState exposes that as an isPending boolean, and useFormStatus lets any nested child component read the same pending state from context, without threading a manually-managed loading flag through props.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -330,6 +360,11 @@ function SubmitButton() {
             {
               question: 'How is the use() hook unique compared to all other hooks?',
               answer: 'It is the only hook that can be called conditionally (inside an "if" statement) or inside loops. It allows and encourages reading async data and context "as needed" within the render logic.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'Why must the promise passed to use() stay stable across renders instead of being created fresh inline?',
+              answer: 'If a new promise is created on every render, use() sees a different promise each time and re-suspends on it repeatedly, since it has no way to know it\'s "the same" request. The promise needs to come from a stable source, like being created once in a Server Component and passed down, or memoized.',
               difficulty: 'Hard'
             },
           ],
@@ -377,6 +412,11 @@ function SubmitButton() {
             {
               question: 'What are the 4 things that trigger a React re-render?',
               answer: '1) State change via useState/useReducer. 2) New props passed from parent. 3) Parent re-renders (all children re-render unless wrapped in React.memo). 4) Consumed Context value changes.',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why is reconciliation cheaper than rebuilding the entire real DOM from scratch on every state change?',
+              answer: 'Real DOM nodes are expensive browser objects with layout, style, and event-handling overhead. React instead diffs lightweight JS objects, the virtual DOM, to compute the minimal set of actual DOM mutations needed, then applies only that small, batched set of real operations instead of tearing down and rebuilding the whole tree.',
               difficulty: 'Medium'
             },
           ],
@@ -440,6 +480,11 @@ function SubmitButton() {
               answer: 'Including an object or array created inline in the dependency array. Each render creates a new reference (even if content is identical). React sees it as changed → triggers re-render → creates new reference → infinite loop. Fix: depend on primitive values, or memoize with useMemo.',
               difficulty: 'Medium'
             },
+            {
+              question: 'Why does batching multiple setState calls in one handler avoid showing intermediate, inconsistent UI?',
+              answer: 'If every setState triggered its own synchronous re-render, updating three pieces of state in one click handler would render the component three times with partial state visible in between. Batching collects every update from that one synchronous block and applies them together in a single render, which is both faster and avoids torn intermediate UI.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -497,6 +542,11 @@ const ProductCard = React.memo(({ p, onDelete }) => (
             {
               question: 'What is the difference between useMemo and useCallback?',
               answer: 'useMemo(() => computedValue, [deps]) memoizes a VALUE. useCallback(() => fn, [deps]) memoizes a FUNCTION REFERENCE. useCallback is essentially useMemo(() => fn, [deps]).',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why is useMemo the wrong tool for a cheap derived value like combining a first and last name?',
+              answer: 'useMemo itself has a small cost: it stores the previous dependencies and value and compares them on every render. For a computation as cheap as string concatenation, that bookkeeping overhead can exceed the cost of just recomputing the value directly. It\'s meant for genuinely expensive work, like sorting or filtering large arrays.',
               difficulty: 'Medium'
             },
           ],
@@ -557,6 +607,11 @@ const [cart, dispatch] = useReducer(cartReducer, { items: [] });`,
               question: 'How is useRef different from useState?',
               answer: 'useRef stores a mutable value in .current that persists across renders WITHOUT triggering a re-render on change. useState triggers a re-render on every change.',
               difficulty: 'Easy'
+            },
+            {
+              question: 'Why does an inline object Context value re-render every consumer even when the data hasn\'t changed?',
+              answer: 'React compares the Context value by reference, not deep equality, and an object literal created inline in the provider\'s render produces a brand-new reference every time, even with identical contents. Every consumer sees "a different value" and re-renders. Memoizing that object, or splitting into more granular contexts, fixes it.',
+              difficulty: 'Hard'
             },
           ],
         },
@@ -661,6 +716,11 @@ export type AppDispatch = typeof store.dispatch;`,
               answer: 'Context API: low-frequency updates (theme, current user, language). All consumers re-render on change. Redux/RTK: high-frequency data, complex state logic, large team apps. Selective subscriptions via useSelector prevent unnecessary re-renders.',
               difficulty: 'Medium'
             },
+            {
+              question: 'Why does createAsyncThunk generate three action types instead of just one?',
+              answer: 'An async operation naturally has three states a UI needs to react to: in flight, succeeded with data, or failed with an error. Dispatching a distinct action for each lets the reducer, via extraReducers, update loading/error/data state precisely at each transition instead of the component manually tracking the promise\'s lifecycle itself.',
+              difficulty: 'Medium'
+            },
           ],
         },
       ],
@@ -729,6 +789,11 @@ function App() {
             {
               question: 'Why can\'t Error Boundaries be function components?',
               answer: 'They need to implement getDerivedStateFromError and componentDidCatch lifecycle methods — there are no hook equivalents for these specific lifecycle events in React (as of React 18).',
+              difficulty: 'Medium'
+            },
+            {
+              question: 'Why does React.lazy require a default export from the dynamically imported module?',
+              answer: 'React.lazy calls the import function and expects the resolved module to expose the component as .default, matching how a dynamic import() resolves an ES module\'s default export. A named export needs to be re-wrapped, like () => import(\'./X\').then(m => ({ default: m.Named })), to satisfy that contract.',
               difficulty: 'Medium'
             },
           ],
@@ -813,6 +878,11 @@ function ResultList({ query }: { query: string }) {
             {
               question: 'Difference between useTransition and useDeferredValue?',
               answer: 'useTransition wraps the setState call — you have control of when the state is set. useDeferredValue wraps the value itself — use when you receive a value as a prop and don\'t control its setter. Both prevent blocking the UI during heavy renders.',
+              difficulty: 'Hard'
+            },
+            {
+              question: 'Why doesn\'t wrapping a fetch() call in startTransition make the network request itself lower priority?',
+              answer: 'startTransition only affects how React schedules the resulting render, marking the state update as interruptible so more urgent updates, like a keystroke, can jump ahead of it. The network request itself runs at its normal browser priority regardless — only the rendering work React does after the data arrives gets deprioritized.',
               difficulty: 'Hard'
             },
           ],
@@ -906,6 +976,11 @@ function useWindowSize() {
               question: 'What is useSyncExternalStore and why does Redux need it in React 18?',
               answer: 'In React 18 concurrent mode, rendering can be interrupted and resumed. Without useSyncExternalStore, a component might read state at two different points in a single render pass — "tearing". useSyncExternalStore forces synchronous reads, ensuring all components see the same snapshot. Redux >= v8 uses it internally.',
               difficulty: 'Hard'
+            },
+            {
+              question: 'Why does useImperativeHandle intentionally hide the raw DOM ref instead of just forwarding it?',
+              answer: 'Exposing the raw DOM node lets any parent call arbitrary DOM APIs on it, coupling the parent to internal implementation details that might change, like swapping a native <video> for a custom player library. Returning a narrow, purpose-built object such as {play, pause} keeps the component\'s public API stable and intentional even if its internals change completely.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -1028,6 +1103,11 @@ function UserList() {
               answer: 'RTK Query is a powerful data fetching and caching tool built into Redux Toolkit. It automates loading states, error handling, caching, background refetching, and cache invalidation via tags. It eliminates 90% of the manual boilerplate required for managing server state in React.',
               difficulty: 'Medium'
             },
+            {
+              question: 'Why does invalidating the generic "User" tag refetch every user query, while a specific {type, id} tag only refetches one?',
+              answer: 'RTK Query tracks which active queries provided which tags — a list query typically provides both the generic "User" tag and one per-item tag per row. Invalidating the generic tag matches and refetches every query that provided it, including the whole list, while invalidating a specific {type, id} tag only matches queries that provided that exact tag, like a single getUserById(42) call.',
+              difficulty: 'Hard'
+            },
           ],
         },
       ],
@@ -1065,6 +1145,11 @@ function UserList() {
               question: 'What is the "Testing Library" philosophy?',
               answer: 'Test how a user interacts with the app, not its internal state. Prefer accessibility-based selectors (getByRole, getByLabelText) over test IDs or class names.',
               difficulty: 'Medium'
+            },
+            {
+              question: 'Why does getByRole catch real bugs that a test-id selector would miss?',
+              answer: 'getByRole fails if the element doesn\'t expose the expected accessible role and name, so a "button" rendered as a non-interactive div with a data-testid still passes a test-id-based test but correctly fails a role-based one, surfacing a real accessibility bug that would affect screen reader users.',
+              difficulty: 'Medium'
             }
           ]
         },
@@ -1079,6 +1164,11 @@ function UserList() {
               question: 'What is the benefit of the Compound Component pattern?',
               answer: 'It avoids "Prop Drilling" and "Mega-Components" with 30+ props. Instead, you split the UI into child components that share state via Context, allowing the consumer greater layout flexibility.',
               difficulty: 'Hard'
+            },
+            {
+              question: 'Why does the compound components pattern typically rely on Context instead of passing shared state through props?',
+              answer: 'The consumer controls the JSX composition and ordering of children, like <Tabs><Tabs.List><Tabs.Tab/></Tabs.List></Tabs>, so the parent can\'t directly pass props through an arbitrary, consumer-defined tree shape. Context lets the parent provide shared state once, and any descendant at any depth the consumer chooses can read it without prop drilling through intermediate layers.',
+              difficulty: 'Medium'
             }
           ]
         }

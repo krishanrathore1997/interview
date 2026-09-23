@@ -41,6 +41,11 @@ echo "<h2>PHP is Fun!</h2>";
               answer: 'Echo has no return value and can take multiple parameters. Print has a return value of 1 (so it can be used in expressions) and takes only one argument. Echo is marginally faster.',
               difficulty: 'Easy'
             },
+            {
+              question: 'Why might you omit the closing ?> tag in a PHP file that\'s included by others?',
+              answer: 'Leaving it off prevents accidental whitespace or a newline after it from being sent to the browser, which can trigger "headers already sent" errors when the file is included before session_start() or a header() call.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -71,6 +76,11 @@ $arr = [1, 2, 3];  // Array
             {
               question: 'How do you declare a global variable inside a function?',
               answer: 'Use the "global" keyword before the variable name inside the function, or use the $GLOBALS array.',
+              difficulty: 'Easy'
+            },
+            {
+              question: 'Why can\'t a function see an outer variable by default?',
+              answer: 'PHP functions have their own local scope, so a variable defined outside a function isn\'t automatically visible inside it. That stops functions from silently depending on and mutating global state — you opt in explicitly with "global" or by passing it as a parameter.',
               difficulty: 'Easy'
             },
           ],
@@ -105,6 +115,11 @@ echo max(0, 150, 30, 20, -10);  // 150
               question: 'What is the main difference between a variable and a constant?',
               answer: 'A constant\'s value cannot be changed after it is defined, and it does not need a $ sign. Variables can be reassigned at any time.',
               difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between define() and a class constant?',
+              answer: 'define() creates a global constant available everywhere once loaded. A class constant (const NAME = ...) belongs to a class or interface, is accessed via ClassName::NAME, and can be overridden in a subclass — giving it a namespace and inheritance that define() doesn\'t have.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -148,6 +163,11 @@ if ($t < 10) {
               answer: 'It is a safer, more concise alternative to switch. It returns a value, does not require break statements, and uses strict identity comparison (===).',
               difficulty: 'Medium'
             },
+            {
+              question: 'How does match\'s strict comparison change error handling compared to switch?',
+              answer: 'match uses strict identity (===), so it won\'t silently fall through on a type-coerced match the way switch\'s loose == can. It also throws an UnhandledMatchError when no arm matches and there\'s no default, instead of switch\'s silent no-op — surfacing missing cases immediately.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -178,6 +198,11 @@ foreach ($colors as $value) {
               question: 'What happens if you use "foreach" on a non-array variable?',
               answer: 'It will trigger a warning in PHP. It is best practice to check if a variable is an array or use type-hinting before reaching the loop.',
               difficulty: 'Medium'
+            },
+            {
+              question: 'What\'s the difference between break and continue in a loop?',
+              answer: 'break exits the loop entirely, skipping any remaining iterations. continue skips the rest of the current iteration\'s code and moves straight to the next iteration.',
+              difficulty: 'Easy'
             },
           ],
         },
@@ -228,6 +253,11 @@ function total(int $price, int $quantity = 1): int
               answer: 'They make function contracts clear, catch wrong inputs earlier, improve IDE support, and reduce runtime surprises.',
               difficulty: 'Easy',
             },
+            {
+              question: 'What do PHP 8.4\'s property hooks let you do that a plain public property can\'t?',
+              answer: 'Property hooks run logic — validation, transformation, computed values — when a property is read (get) or written (set), without separate getter/setter methods. So `$user->email = $value` can normalize the value on the way in while callers keep using plain property syntax.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -255,6 +285,11 @@ echo "Ben is " . $age['Ben'] . " years old.";
             {
               question: 'How do you add an element to an existing array?',
               answer: 'Use $array[] = "value"; or array_push($array, "value");',
+              difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between array_map() and array_filter()?',
+              answer: 'array_map() applies a callback to every element and returns a new array of the same length with transformed values. array_filter() applies a callback that returns true or false and returns a new array with only the elements that passed, preserving the original keys.',
               difficulty: 'Easy'
             },
           ],
@@ -298,6 +333,11 @@ if ($email === '') {
               answer: '== compares after type conversion. === compares both value and type. Prefer === for predictable checks, especially in validation and security-sensitive code.',
               difficulty: 'Medium',
             },
+            {
+              question: 'What does the null coalescing assignment operator (??=) do?',
+              answer: '$value ??= \'default\' assigns \'default\' only if $value is currently null or undefined, leaving any existing non-null value untouched — shorthand for $value = $value ?? \'default\'.',
+              difficulty: 'Easy',
+            },
           ],
         },
       ],
@@ -335,6 +375,11 @@ echo "Welcome, " . htmlspecialchars($name);
               answer: 'Use $_GET for non-sensitive data like search queries (bookmarks). Use $_POST for sensitive information (passwords) or data that modifies the server state.',
               difficulty: 'Easy'
             },
+            {
+              question: 'Why is htmlspecialchars() important when echoing user input back to the page?',
+              answer: 'It encodes characters like < > " & into HTML entities, so a value like <script> that a user submitted is displayed as text instead of executing as markup or script — a core defense against stored and reflected XSS.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -362,6 +407,11 @@ echo "Copyright &copy; " . date("Y") . " W3Schools.com";
             {
               question: 'What is the difference between include and require?',
               answer: 'If the file is missing, include produces a warning but the script continues. require produces a fatal error and stops the script.',
+              difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between include_once and include?',
+              answer: 'include_once checks whether the file has already been included anywhere in the request and skips it if so, preventing redeclaration errors — like a "Cannot redeclare function" fatal error — when the same file could be pulled in through more than one path.',
               difficulty: 'Easy'
             },
           ],
@@ -393,6 +443,11 @@ echo "Session variables are set.";
               question: 'Where are session variables stored?',
               answer: 'Session variables are stored on the server, while the session ID is usually stored in a cookie on the client browser.',
               difficulty: 'Medium'
+            },
+            {
+              question: 'How would you make a PHP session cookie safer against theft?',
+              answer: 'Set the HttpOnly flag (blocks JavaScript access), Secure (HTTPS only), and SameSite=Lax or Strict (limits cross-site sending), and call session_regenerate_id() after login to prevent session fixation.',
+              difficulty: 'Hard'
             },
           ],
         },
@@ -442,6 +497,11 @@ if ($file && $file['error'] === UPLOAD_ERR_OK && $file['size'] < 2_000_000) {
               answer: 'Validate upload error code, size, MIME type, extension, authorization, and storage path. Do not trust the browser filename, and prefer storing files outside the public web root.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why shouldn\'t you trust the MIME type in $_FILES[\'field\'][\'type\']?',
+              answer: 'That value comes straight from the browser\'s Content-Type header on the upload request, which the client fully controls and can spoof. Re-verify the real file type server-side, for example with finfo_file(), instead of trusting the client-supplied value.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -482,6 +542,11 @@ echo json_encode(['valid' => $valid]);
             {
               question: 'Validation vs sanitization: what is the difference?',
               answer: 'Validation decides whether data is acceptable. Sanitization changes data into a safer or normalized form. For important input, validate and reject bad data instead of silently changing meaning.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'What does json_last_error() protect you from?',
+              answer: 'json_decode() returns null both for an actual JSON null and for invalid or malformed JSON, so checking only the return value can\'t tell them apart. json_last_error() tells you whether decoding truly failed, so you can reject bad input instead of silently treating it as null.',
               difficulty: 'Medium',
             },
           ],
@@ -539,6 +604,11 @@ class StripeGateway implements PaymentGateway
               answer: 'Use an interface to define a contract that many classes can implement. Use an abstract class when you need a shared base with common behavior plus required methods.',
               difficulty: 'Medium',
             },
+            {
+              question: 'What\'s the difference between a trait and inheritance for sharing code?',
+              answer: 'A class can only extend one parent (single inheritance), but can use multiple traits, which paste in a bundle of methods directly onto the class. Traits fit small, shared, mixin-like behavior — like a Loggable trait — where a full parent-child relationship doesn\'t make sense.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -576,6 +646,11 @@ $user = $stmt->fetch();
             {
               question: 'Why do prepared statements prevent SQL injection?',
               answer: 'They send the SQL structure and user values separately, so user input is treated as data instead of executable SQL.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'What\'s the difference between PDO and mysqli for database access?',
+              answer: 'PDO supports multiple database drivers — MySQL, PostgreSQL, SQLite, and more — behind one consistent API, plus named placeholders. mysqli is MySQL-specific only. That driver-agnostic interface is why most modern PHP frameworks build on something similar to PDO.',
               difficulty: 'Medium',
             },
           ],

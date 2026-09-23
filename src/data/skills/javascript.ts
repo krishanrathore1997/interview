@@ -45,6 +45,11 @@ document.getElementById("demo").innerHTML = "Hello HTML!";`,
               answer: 'console.log() is generally better as it doesn\'t block the UI thread and allows you to inspect complex objects without dismissing a popup.',
               difficulty: 'Easy'
             },
+            {
+              question: 'What\'s the difference between console.log and console.error?',
+              answer: 'Both print to the console and accept multiple arguments or objects for inspection, but console.error is styled distinctly (usually red) and, in Node/browser dev tools, includes a stack trace, which makes real errors easier to spot among normal logs.',
+              difficulty: 'Easy'
+            },
           ],
         },
         {
@@ -74,6 +79,11 @@ let total = price * quantity;`,
               question: 'Can you re-declare a variable with "let" in the same scope?',
               answer: 'No, "let" does not allow re-declaration in the same scope, which helps prevent accidental bugs.',
               difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between let/const and the legacy var in terms of scope?',
+              answer: 'var is function-scoped and hoisted with an initial value of undefined, so it can be referenced (as undefined) before its declaration line. let and const are block-scoped and sit in a "temporal dead zone" until their declaration runs, throwing a ReferenceError if accessed early.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -113,6 +123,11 @@ if (hour < 12) {
               answer: '== checks for equality only (with type conversion), while === checks for both equality AND data type (strict equality).',
               difficulty: 'Medium'
             },
+            {
+              question: 'What are JavaScript\'s falsy values?',
+              answer: 'false, 0, -0, "" (empty string), null, undefined, and NaN. Everything else — including "0", "false" as a string, [], and {} — is truthy.',
+              difficulty: 'Easy'
+            },
           ],
         },
         {
@@ -140,6 +155,11 @@ if (hour < 12) {
               question: 'How do you stop a loop prematurely?',
               answer: 'Use the "break" keyword inside the loop body.',
               difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between for...in and for...of?',
+              answer: 'for...in iterates over enumerable property keys — indexes for arrays, keys for objects — and isn\'t ideal for arrays since order and inherited keys aren\'t guaranteed. for...of iterates over the values of any iterable (arrays, strings, Maps, Sets) and is the preferred way to loop over array values.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -177,6 +197,11 @@ let sum = add(10, 20);`,
               answer: 'It returns "undefined" by default.',
               difficulty: 'Medium'
             },
+            {
+              question: 'What is a closure, and why does it matter?',
+              answer: 'A closure is a function that keeps access to the variables from its enclosing scope even after that outer function has finished running. It\'s the basis of private state — the module pattern, memoization, and factory functions like counters all rely on closures.',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -203,6 +228,11 @@ fruits.push("Date");    // Adds to the end`,
             {
               question: 'How do you find the number of elements in an array?',
               answer: 'Use the .length property (e.g. fruits.length).',
+              difficulty: 'Easy'
+            },
+            {
+              question: 'What\'s the difference between slice() and splice()?',
+              answer: 'slice() returns a shallow copy of a portion of the array without touching the original. splice() mutates the original array in place, removing and/or inserting elements at a given position.',
               difficulty: 'Easy'
             },
           ],
@@ -233,6 +263,11 @@ console.log(squared); // [1, 4, 9]`,
               answer: 'No, map() creates a new array and leaves the original array unchanged.',
               difficulty: 'Medium'
             },
+            {
+              question: 'When would you use reduce() instead of map() or forEach()?',
+              answer: 'Use reduce() when you need to derive a single accumulated value from an array — a sum, a grouped object, a flattened list — rather than a same-length transformed array (map) or just a side effect per item (forEach).',
+              difficulty: 'Medium'
+            },
           ],
         },
         {
@@ -259,6 +294,11 @@ let today = new Date();`,
               question: 'How do you get the current year in JavaScript?',
               answer: 'Use new Date().getFullYear().',
               difficulty: 'Easy'
+            },
+            {
+              question: 'Why is comparing floating point numbers with === risky?',
+              answer: 'Floating point arithmetic can introduce tiny rounding errors — 0.1 + 0.2 === 0.3 is false in JavaScript. Compare with a small epsilon tolerance (Math.abs(a - b) < 0.0001) or round to a fixed precision instead of relying on exact equality.',
+              difficulty: 'Medium'
             },
           ],
         },
@@ -297,6 +337,11 @@ let today = new Date();`,
               answer: 'DOM stands for Document Object Model. It is a programming interface for HTML and XML documents that represents the page as a tree structure.',
               difficulty: 'Medium'
             },
+            {
+              question: 'What\'s the difference between addEventListener and an inline onclick attribute?',
+              answer: 'addEventListener lets you attach multiple listeners to the same event without one overwriting another, supports capturing/bubbling options and a removeEventListener cleanup path, and keeps markup separate from behavior, which is the modern best practice.',
+              difficulty: 'Easy'
+            },
           ],
         },
         {
@@ -327,6 +372,11 @@ const myCar = new Car("Ford");`,
               question: 'What is the purpose of "try...catch"?',
               answer: 'It allows you to test a block of code for errors and handle them gracefully without stopping the script.',
               difficulty: 'Medium'
+            },
+            {
+              question: 'What is prototypal inheritance in JavaScript?',
+              answer: 'Every object has an internal link to a prototype object it can inherit properties and methods from. Classes are syntactic sugar over this prototype chain — methods defined in a class body live once on the prototype and are shared by every instance, not copied onto each one.',
+              difficulty: 'Hard'
             },
           ],
         },
@@ -374,6 +424,11 @@ console.log(meta); // { role: "admin" }`,
               answer: 'Dot notation is for fixed property names like user.name. Bracket notation is for dynamic names like user[field] or names that are not valid identifiers.',
               difficulty: 'Easy',
             },
+            {
+              question: 'What\'s the difference between Object.freeze() and just using const for an object?',
+              answer: 'const only stops the variable from being reassigned to a different object; the object\'s own properties can still be mutated. Object.freeze() makes the object itself immutable (mutations silently fail in non-strict mode, throw in strict mode), though it\'s only a shallow freeze — nested objects stay mutable.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -412,6 +467,11 @@ const total = quantity * price;`,
               question: 'Why is Number.isNaN(value) safer than value === NaN?',
               answer: 'NaN is never equal to itself, so value === NaN is always false. Number.isNaN(value) correctly checks whether the value is the special NaN number.',
               difficulty: 'Medium',
+            },
+            {
+              question: 'What does [] + [] evaluate to, and why?',
+              answer: 'It evaluates to an empty string "". The + operator coerces both operands with ToPrimitive; arrays convert to strings via their toString(), and an empty array becomes "", so "" + "" is "". The same rule explains why [] + {} produces "[object Object]".',
+              difficulty: 'Hard',
             },
           ],
         },
@@ -459,6 +519,11 @@ const user = JSON.parse(payload);`,
               answer: 'Use Set when uniqueness and fast membership checks matter. Arrays are better when order, duplicates, or array methods are the main need.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why would you use a Map instead of a plain object for a lookup table?',
+              answer: 'Map preserves insertion order reliably, allows any value (not just strings or symbols) as a key, exposes a real .size property, and doesn\'t carry inherited prototype properties that could accidentally collide with your data keys.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -494,6 +559,11 @@ const user = JSON.parse(payload);`,
             {
               question: 'Why are JavaScript modules useful?',
               answer: 'Modules split code into reusable files, make dependencies explicit with import/export, reduce global variables, and help bundlers optimize the final bundle.',
+              difficulty: 'Easy',
+            },
+            {
+              question: 'What\'s the difference between a default export and a named export?',
+              answer: 'A module can have only one default export, and the importer can give it any local name (import Foo from "./x"). Named exports can be many per module and must be imported by their exact name (or renamed with "as"), which plays better with IDE auto-import and refactoring tools.',
               difficulty: 'Easy',
             },
           ],
@@ -542,6 +612,11 @@ const user = JSON.parse(payload);`,
               answer: 'A callback is a function passed to run later. A Promise is an object representing a future result and supports chaining, error handling, and async/await syntax.',
               difficulty: 'Medium',
             },
+            {
+              question: 'In what order do a synchronous log, a setTimeout(fn, 0), and a Promise.then() run?',
+              answer: 'Synchronous code runs first, in order. Then all pending microtasks (Promise.then/catch/finally callbacks) run before the event loop moves to the next macrotask — so even setTimeout(fn, 0) fires after every already-queued Promise callback, not before it.',
+              difficulty: 'Hard',
+            },
           ],
         },
         {
@@ -576,6 +651,11 @@ const theme = localStorage.getItem('theme') ?? 'light';`,
             {
               question: 'localStorage vs sessionStorage vs cookies: what is the difference?',
               answer: 'localStorage persists until cleared, sessionStorage lasts for the browser tab, and cookies are sent with HTTP requests. Cookies can be protected with flags like HttpOnly, Secure, and SameSite.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'How would you clean up a setInterval so it doesn\'t leak?',
+              answer: 'Store the ID that setInterval returns and call clearInterval(id) once the feature no longer needs it — for example in a component\'s cleanup function, or right before starting a replacement interval — so duplicate timers don\'t silently stack up.',
               difficulty: 'Medium',
             },
           ],

@@ -104,8 +104,8 @@ export default function Sidebar() {
           />
         </div>
 
-        {/* Overview */}
-        <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--border-default)' }}>
+        {/* Overview + Checklist */}
+        <div style={{ padding: '0.5rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.125rem', borderBottom: '1px solid var(--border-default)' }}>
           <Link
             href="/"
             className={`sidebar-overview-link${pathname === '/' ? ' active' : ''}`}
@@ -116,6 +116,16 @@ export default function Sidebar() {
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
             Overview
+          </Link>
+          <Link
+            href="/checklist"
+            className={`sidebar-overview-link${pathname === '/checklist' ? ' active' : ''}`}
+            onClick={closeMobile}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+            Checklist
           </Link>
         </div>
 

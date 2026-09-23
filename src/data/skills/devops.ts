@@ -35,6 +35,11 @@ export const devops: SkillPageContent = {
               answer: 'Separate dev/staging/prod, build once and promote the same artifact, externalize configuration via env vars/secret manager, and keep infrastructure/config changes reviewed and reproducible.',
               difficulty: 'Medium',
             },
+            {
+              question: 'What\'s the risk of letting staging and production configs silently drift apart?',
+              answer: 'A change that "works in staging" can fail in production because of an untracked difference — a missing env var, a different feature flag, a different resource limit — so bugs only surface after deploy, exactly when they\'re most expensive to debug. Treating config as versioned code instead of manual dashboard edits prevents this.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -56,6 +61,11 @@ export const devops: SkillPageContent = {
             {
               question: 'How do you deploy safely without causing downtime?',
               answer: 'Use progressive delivery (canary/blue-green), monitor error rate/latency, keep changes backward compatible, and ensure a fast rollback strategy. Handle DB migrations carefully to preserve rollback paths.',
+              difficulty: 'Hard',
+            },
+            {
+              question: 'What\'s the practical difference between canary and blue/green deployments?',
+              answer: 'Canary gradually shifts a small percentage of live traffic to the new version while both run side by side, catching problems on real traffic before a full rollout. Blue/green keeps two complete environments and switches all traffic at once — instant rollback by flipping back, but it won\'t catch issues that only appear under partial, real-world load.',
               difficulty: 'Hard',
             },
           ],
@@ -104,6 +114,11 @@ export const devops: SkillPageContent = {
               answer: 'Install with a lockfile, run lint + typecheck, run unit and integration tests, then build the artifact. Optionally run a small E2E suite for critical flows. Keep CI deterministic and fast.',
               difficulty: 'Medium',
             },
+            {
+              question: 'Why order CI steps from cheapest to most expensive check?',
+              answer: 'Lint and typecheck fail in seconds and catch a large share of mistakes, so running them first gives developers fast feedback and avoids burning CI minutes running a full test suite on a build that was always going to fail a basic check.',
+              difficulty: 'Medium',
+            },
           ],
         },
       ],
@@ -145,6 +160,11 @@ docker run -p 3000:3000 --env-file .env myapp:latest`,
               answer: 'An image is the packaged artifact (filesystem + metadata). A container is a running instance of that image with a writable layer and runtime configuration.',
               difficulty: 'Easy',
             },
+            {
+              question: 'Why do multi-stage Docker builds reduce the final image size?',
+              answer: 'Build tools, compilers, and a full SDK can run in an early stage, then only the compiled output gets copied into a lean final stage — the heavy build-time dependencies never make it into the image that actually ships to production.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -165,6 +185,11 @@ docker run -p 3000:3000 --env-file .env myapp:latest`,
             {
               question: 'Why do we use Docker volumes?',
               answer: 'To persist data independent of the container lifecycle. Containers are disposable; volumes keep state like database data across restarts/rebuilds.',
+              difficulty: 'Medium',
+            },
+            {
+              question: 'How do containers in the same Docker Compose network usually talk to each other?',
+              answer: 'By service name — Compose creates a shared network where each service is reachable at a hostname matching its service key, like an app container reaching a database at "db:5432" instead of a hardcoded IP. That hostname stays stable even after the underlying container is recreated.',
               difficulty: 'Medium',
             },
           ],
@@ -196,6 +221,11 @@ docker run -p 3000:3000 --env-file .env myapp:latest`,
               answer: 'Error rate (5xx), latency (p95/p99), traffic/rate, and saturation (CPU/memory/DB). Use request IDs in logs and alert on SLO breaches with clear runbooks.',
               difficulty: 'Hard',
             },
+            {
+              question: 'What\'s the difference between a metric, a log, and a trace?',
+              answer: 'A metric is a numeric measurement over time, like request count or latency. A log is a discrete, timestamped event with context. A trace follows one request as it moves through multiple services, showing where the time went. Metrics tell you something is wrong; logs and traces help you find why.',
+              difficulty: 'Medium',
+            },
           ],
         },
         {
@@ -217,6 +247,11 @@ docker run -p 3000:3000 --env-file .env myapp:latest`,
             {
               question: 'How do you roll out a breaking schema change safely?',
               answer: 'Use expand/contract: add new schema, deploy code that supports both, backfill data, switch reads/writes, then remove old schema in a later deploy. This preserves rollback paths.',
+              difficulty: 'Hard',
+            },
+            {
+              question: 'Why is dropping an old column right after deploying new code risky during a rolling deploy?',
+              answer: 'Old and new instances of the app run side by side for a period during a rolling deploy. If the old instances still read or write the dropped column, they start erroring the moment it disappears — that\'s exactly why expand/contract keeps the old column around until every instance is confirmed on the new code.',
               difficulty: 'Hard',
             },
           ],

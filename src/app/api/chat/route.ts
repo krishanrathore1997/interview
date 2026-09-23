@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     const modelMessages = await convertToModelMessages(messages);
 
     const result = streamText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-flash-latest'),
       system: buildSystemPrompt({ mode, topic, conceptTitle, conceptSummary, starterPrompts }),
       messages: modelMessages,
       temperature: mode === 'learn' ? 0.4 : 0.7,
