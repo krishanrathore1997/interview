@@ -602,62 +602,48 @@ export default function Home() {
 
   return (
     <div className="page-container fade-in">
-      <div className="profile-card" style={{ flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap', width: '100%' }}>
-          <div className="profile-avatar" style={{ fontSize: '1rem' }}>FS</div>
-          <div className="profile-info" style={{ flex: 1, minWidth: 0 }}>
-            <div className="profile-name">Concepts and Fundamentals in Simple Language</div>
-            <div className="profile-role">
-              Official-doc based explanations for Laravel, PHP, HTML, CSS, JavaScript, TypeScript, React, MySQL, HTTP & APIs, Next.js, Git - plus security, testing, system design, and DevOps.
-            </div>
-            <div className="profile-skills" style={{ marginTop: '0.625rem' }}>
-              {techStack.map((item) => (
-                <span
-                  key={item.label}
-                  className="skill-badge"
-                  style={{
-                    color: item.color,
-                    borderColor: `${item.color}40`,
-                    background: `${item.color}14`,
-                  }}
-                >
-                  {item.label}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', flexShrink: 0 }}>
-            <Link
-              href="/interview"
+      <div className="relative mb-12 p-8 lg:p-12 rounded-2xl overflow-hidden border border-white/10 bg-surface/50 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-teal-500/5">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-500/10 via-transparent to-transparent blur-2xl"></div>
+        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-teal-400 to-blue-500 rounded-l-2xl"></div>
+        
+        <h1 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 text-primary leading-[1.1]">
+          Concepts and Fundamentals in <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500">Simple Language</span>
+        </h1>
+        
+        <p className="text-[1.05rem] text-secondary max-w-3xl leading-relaxed mb-8">
+          Official-doc based explanations for Laravel, PHP, HTML, CSS, JavaScript, TypeScript, React, MySQL, HTTP & APIs, Next.js, Git — plus security, testing, system design, and DevOps.
+        </p>
+        
+        <div className="flex flex-wrap gap-2 mb-8">
+          {techStack.map((item) => (
+            <span
+              key={item.label}
+              className="px-3 py-1 text-xs font-semibold rounded-full border transition-transform hover:scale-105 cursor-default"
               style={{
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: 'var(--clr-interview)',
-                padding: '0.4rem 0.875rem',
-                border: '1px solid var(--clr-interview)',
-                borderRadius: '6px',
-                display: 'inline-block',
+                color: item.color,
+                borderColor: `${item.color}40`,
+                background: `${item.color}14`,
               }}
             >
-              Interview Q&amp;A Bank -&gt;
-            </Link>
-            <Link
-              href="/typescript"
-              style={{
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: '#60a5fa',
-                padding: '0.4rem 0.875rem',
-                border: '1px solid var(--border-default)',
-                borderRadius: '6px',
-                display: 'inline-block',
-              }}
-            >
-              Open TypeScript Track -&gt;
-            </Link>
-          </div>
+              {item.label}
+            </span>
+          ))}
         </div>
 
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            href="/interview"
+            className="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-medium transition-all shadow-md hover:shadow-teal-500/20 active:scale-95"
+          >
+            Interview Q&A Bank &rarr;
+          </Link>
+          <Link
+            href="/typescript"
+            className="px-6 py-2.5 rounded-lg border border-border-default hover:border-border-active text-primary font-medium transition-colors active:scale-95 bg-white/5"
+          >
+            Open TypeScript Track &rarr;
+          </Link>
+        </div>
       </div>
 
       <div className="info-box" style={{ marginTop: 0 }}>

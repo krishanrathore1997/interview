@@ -1,43 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-base: var(--bg-base);
+  
+  --color-border-default: var(--border-default);
+  --color-border-active: var(--border-active);
+}
+
 /* ══════════════════════════════════════════════
    DESIGN TOKENS
 ══════════════════════════════════════════════ */
 :root {
-    /* Background */
-    --bg-base: #f7f9fc;
+    /* Background - Modern Light */
+    --bg-base: #fafafa;
     --bg-surface: #ffffff;
-    --bg-elevated: #f1f5f9;
-    --bg-hover: #e8eef6;
+    --bg-elevated: #ffffff;
+    --bg-hover: #f4f4f5;
     --bg-main: var(--bg-base);
     --bg-subtle: var(--bg-hover);
 
-    /* Text */
-    --text-primary: #172033;
-    --text-secondary: #4f6178;
-    --text-muted: #7a8797;
+    /* Text - High Contrast Light */
+    --text-primary: #09090b;
+    --text-secondary: #52525b;
+    --text-muted: #a1a1aa;
     --text-link: #2563eb;
 
-    /* Accent */
+    /* Accent - Teal Brand */
     --accent: #0f766e;
     --accent-soft: #14b8a6;
     --accent-dim: rgba(15, 118, 110, 0.1);
     --text-accent: var(--accent);
     --text-accent-soft: var(--accent-soft);
 
-    /* Topic Colors */
-    --clr-laravel: #ff7043;
-    --clr-php: #6d5bd0;
-    --clr-react: #087ea4;
-    --clr-sql: #0f6f96;
-    --clr-nextjs: #111827;
+    /* Topic Colors - Adjusted for vibrancy */
+    --clr-laravel: #f97316;
+    --clr-php: #7c3aed;
+    --clr-react: #0ea5e9;
+    --clr-sql: #0284c7;
+    --clr-nextjs: #09090b;
     --clr-git: #f97316;
     --clr-interview: #0f766e;
-    --clr-html-css: #0284c7;
+    --clr-html-css: #3b82f6;
 
-    /* Borders */
-    --border-default: #d8e2ec;
-    --border-hover: #b8c7d8;
+    /* Borders - Subtle glassmorphism */
+    --border-default: #e4e4e7;
+    --border-hover: #d4d4d8;
     --border-active: var(--accent);
     --border-subtle: var(--border-default);
     --border-medium: var(--border-hover);
@@ -45,10 +58,57 @@
     /* Sidebar */
     --sidebar-width: 260px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(25, 38, 58, 0.08);
-    --shadow-md: 0 8px 24px rgba(25, 38, 58, 0.1);
-    --shadow-lg: 0 18px 45px rgba(25, 38, 58, 0.12);
+    /* Shadows - Modern diffuse */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Background - Linear Dark */
+        --bg-base: #0a0a0a;
+        --bg-surface: #121212;
+        --bg-elevated: #1a1a1a;
+        --bg-hover: #27272a;
+        --bg-main: var(--bg-base);
+        --bg-subtle: var(--bg-hover);
+
+        /* Text - High Contrast Dark */
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #52525b;
+        --text-link: #60a5fa;
+
+        /* Accent - Glow */
+        --accent: #2dd4bf;
+        --accent-soft: #5eead4;
+        --accent-dim: rgba(45, 212, 191, 0.15);
+        --text-accent: var(--accent);
+        --text-accent-soft: var(--accent-soft);
+
+        /* Topic Colors - Dark Mode adjusted */
+        --clr-laravel: #fdba74;
+        --clr-php: #a78bfa;
+        --clr-react: #7dd3fc;
+        --clr-sql: #38bdf8;
+        --clr-nextjs: #fafafa;
+        --clr-git: #fdba74;
+        --clr-interview: #2dd4bf;
+        --clr-html-css: #93c5fd;
+
+        /* Borders - Extremely subtle */
+        --border-default: #27272a;
+        --border-hover: #3f3f46;
+        --border-active: var(--accent);
+        --border-subtle: var(--border-default);
+        --border-medium: var(--border-hover);
+
+        /* Shadows - Glow rather than drop shadow */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.8);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.8);
+        --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8);
+    }
 }
 
 /* ══════════════════════════════════════════════
@@ -62,7 +122,7 @@
     }
 
     html {
-        color-scheme: light;
+        color-scheme: light dark;
         font-size: 16px;
         scroll-behavior: smooth;
     }
@@ -142,6 +202,9 @@
     min-height: 100vh;
     min-width: 0;
     flex: 1;
+    background-image: radial-gradient(var(--border-default) 1px, transparent 0);
+    background-size: 24px 24px;
+    background-position: -19px -19px;
 }
 
 @media (max-width: 1024px) {
